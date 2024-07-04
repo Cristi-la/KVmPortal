@@ -95,3 +95,10 @@ Skrypt używa polecenia nc (netcat) do sprawdzenia, czy serwer PostgreSQL jest u
 
 
 
+
+
+
+# SOURCES:
+- https://developer.mozilla.org/en-US/docs/Learn/Server-side
+- https://docs.djangoproject.com/en/5.0/
+

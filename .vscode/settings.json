@@ -12,5 +12,8 @@
 
         // All hidden files
         ".gitignore": true,
+    },
+    "editor.tokenColorCustomizations": {
+        "comments": "#36cc3e", // Sets comments to bright green
     }
 }

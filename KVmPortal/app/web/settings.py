@@ -17,16 +17,24 @@ INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
 
-# Application definition
+AUTH_USER_MODEL = 'apps.acc.Account'
+SITE_MODEL = 'apps.acc.Instance'
+SITE_ID = 1
 
+# Application definition
 INSTALLED_APPS = [
+
+    # must be first
     'daphne',
+
+    # Buildins
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites'
 
     # Installed moudles
     'channels',
@@ -35,6 +43,8 @@ INSTALLED_APPS = [
     # My apps
     'apps.term',
     'apps.gui',
+    'apps.virt',
+    'apps.acc',
 ]
 
 MIDDLEWARE = [
