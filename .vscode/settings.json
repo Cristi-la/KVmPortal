@@ -1,0 +1,16 @@
+{
+    "files.exclude": {
+        // Production Docker FILES:
+        "**/*.prod*": true,
+        // "**/Dockerfile*": true,
+        "**/app/worker.py": true,
+        // "**/docker-compose.*": true,
+
+        // Licence
+        "LICENCE": true,
+        "**/nginx": true,
+
+        // All hidden files
+        ".gitignore": true,
+    }
+}

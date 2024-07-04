@@ -1,0 +1,54 @@
+services:
+  # Django Server
+  web:
+    build:
+      context: ./app
+      dockerfile: Dockerfile.prod
+    # command: uvicorn web.asgi:application --host 0.0.0.0 --port 8000 --lifespan off
+    # command: gunicorn --bind 0.0.0.0:8000 --workers 1 --threads 2  web.asgi:application -k worker.UvicornWorker
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+      - media_volume:/home/app/web/mediafiles
+    # only exposed internally to other Docker services
+    expose:
+      - 8000
+    env_file:
+      - ./.env.prod
+    depends_on:
+      - db
+      - redis
+
+  # Database
+  db:
+    image: postgres:16.2
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+      - media_volume:/home/app/web/mediafiles
+    env_file:
+      - ./.env.prod
+      
+  #  Cache efficency
+  redis:
+    restart: always
+    image: redis:7.2.4
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+  # # handle client requests as well as serve up static files.
+  nginx:
+    build: ./nginx
+    volumes:
+      - static_volume:/home/app/web/staticfiles
+    ports:
+      - 1337:80
+    depends_on:
+      - web
+
+
+
+volumes:
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
