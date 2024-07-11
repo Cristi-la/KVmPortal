@@ -12,9 +12,9 @@ class Account(AbstractUser):
 class Instance(Site):
     '''
     Define in Site model:
-    domain: models.CharField
-    name: models.CharField
-    objects: SiteManager
+    @domain: models.CharField
+    @name: models.CharField
+    #objects: SiteManager
     '''
 
     class InstanceType(models.TextChoices):
@@ -38,5 +38,5 @@ class Instance(Site):
         if errors:
             raise ValidationError(errors)
 
-        
-        
+
+

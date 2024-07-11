@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from django.contrib.auth.models import User
+from django.views.generic import TemplateView
 
 
 def test(request):
-    user = User.objects.all()
-
     return render(
         request,
         'test.html',
-        {'user': user}
+        {'user': 'user'}
     )
+
+
+class Terminal(TemplateView):
+    template_name = 'terminal.html'

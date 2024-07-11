@@ -17,8 +17,8 @@ INTERNAL_IPS += [".".join(ip.split(".")[:-1] + ["1"]) for ip in ips]
 
 CSRF_TRUSTED_ORIGINS = ["http://localhost:1337"]
 
-AUTH_USER_MODEL = 'apps.acc.Account'
-SITE_MODEL = 'apps.acc.Instance'
+AUTH_USER_MODEL = 'acc.Account'
+SITE_MODEL = 'acc.Instance'
 SITE_ID = 1
 
 # Application definition
@@ -28,13 +28,15 @@ INSTALLED_APPS = [
     'daphne',
 
     # Buildins
+    # durring creation of AUTH_USER_MODEL it is required to comment out this line
     'django.contrib.admin',
+    
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites'
+    'django.contrib.sites',
 
     # Installed moudles
     'channels',
@@ -124,7 +126,10 @@ USE_TZ = True
 
 
 STATIC_URL = 'static/'
-STATIC_ROOT = BASE_DIR / "staticfiles"
+# STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "staticfiles",
+]
 
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
