@@ -1,0 +1,11 @@
+
+
+body {
+    overflow: hidden;
+}
+
+
+#terminal {
+    min-height: 100% !important;
+    max-width: 100% !important;
+}

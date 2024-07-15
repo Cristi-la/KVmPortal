@@ -1,9 +1,8 @@
 class TerminalManager {
     constructor() {
         this.term = null
-        // this.fitAddon = null
-        // this.termContentLoadedFromDb = false
-        // this.socket = null
+        this.fitAddon = null
+        this.socket = null
     }
 
     init() {
@@ -31,41 +30,69 @@ class TerminalManager {
         }
 
         this.term.open(container);
-        document.querySelector('#terminal .terminal').classList.toggle('fullscreen');
+        container.querySelector('.terminal').classList.toggle('fullscreen');
         this.fitAddon.fit();
         this.term.focus()
-        this.setupResizeListener();
-        
+        this._reside_setup();
     }
 
-    _reside_setup(){
-        xterm.onResize(function (evt) {
-        const terminal_size = {
-            Width: evt.cols,
-            Height: evt.rows,
+    setWebSocket(socket) {
+        this.socket = socket;
+
+        if (!this.term) return;
+
+        this.term.onData(data => {
+            this.sendData(JSON.stringify({'action': 'execute', 'data': data}));
+        });     
+    }
+
+    
+    _reside_setup() {
+        let resizeTimer;
+        const resizeFunction = () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                if (this.term && this.fitAddon) {
+                    this.performResize();
+                }
+            }, 300);
         };
-        // websocket.send("\x04" + JSON.stringify(terminal_size));
+
+        const observer = new MutationObserver(resizeFunction);
+        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+
+        window.addEventListener('beforeunload', () => {
+            observer.disconnect();
         });
-
-        const xterm_resize_ob = new ResizeObserver(function (entries) {
-            try {
-              fitAddon && fitAddon.fit();
-            } catch (err) {
-              console.log(err);
-            }
-          });
-
-        xterm_resize_ob.observe(document.querySelector("#xterm"));
     }
 
+    sendData(data_json) {
+        this.socket.send(data_json);
+    }
+
+    writeMessage(message) {
+        this.term.write(message)
+    }
+
+    performResize() {
+        if (!this.term || !this.fitAddon || !this.socket) return;
+        this._delTermSize()
+
+        this.fitAddon.fit();
+
+        const NewCols = this.term.cols;
+        const NewRows = this.term.rows;
+        this.sendData(JSON.stringify({'action': 'resize', 'type': 'new', 'data': {'cols': NewCols, 'rows': NewRows}}));
+        console.log('Resize performed')
+    }
+
+    _delTermSize() {
+        if (!this.term || !this.fitAddon || !this.socket) return;
+        const Cols = this.term.cols;
+        const Rows = this.term.rows;
+        this.sendData(JSON.stringify({'action': 'resize', 'type': 'del', 'data': {'cols': Cols, 'rows': Rows}}));
+    }
 }
 
 
-window.addEventListener('load', () => {
-    const frame = document.getElementById('terminal')
-    const terminal = new TerminalManager()
 
-    terminal.init()
-    terminal.createQui(frame)
-
-})

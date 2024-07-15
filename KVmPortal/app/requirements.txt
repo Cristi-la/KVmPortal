@@ -6,3 +6,4 @@ daphne==4.1.0
 channels==4.0.0
 channels_redis==4.1.0
 django-debug-toolbar==4.4.3
+paramiko==3.4.0
