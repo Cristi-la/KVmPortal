@@ -1,10 +1,10 @@
 from pathlib import Path
 import os
 import socket
-
+from django.core.management.utils import get_random_secret_key
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.environ.get("SECRET_KEY")
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', get_random_secret_key())
 DEBUG = bool(os.environ.get("DEBUG", default=0))
 
 ALLOWED_HOSTS = os.environ.get("DJANGO_ALLOWED_HOSTS").split(" ")
@@ -21,6 +21,12 @@ AUTH_USER_MODEL = 'acc.Account'
 SITE_MODEL = 'acc.Instance'
 SITE_ID = 1
 
+CSP_DEFAULT_SRC = ("'self'",)
+CSP_SCRIPT_SRC = ("'self'")
+CSP_STYLE_SRC = ("'self'",)
+CSP_IMG_SRC = ("'self'")
+CSP_FONT_SRC = ("'self'")
+
 # Application definition
 INSTALLED_APPS = [
 
@@ -30,12 +36,13 @@ INSTALLED_APPS = [
     # Buildins
     # durring creation of AUTH_USER_MODEL it is required to comment out this line
     'django.contrib.admin',
-    
+
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.flatpages',
     'django.contrib.sites',
 
     # Installed moudles
@@ -43,10 +50,11 @@ INSTALLED_APPS = [
     'debug_toolbar',
 
     # My apps
-    'apps.term',
-    'apps.gui',
-    'apps.virt',
     'apps.acc',
+    'apps.gui',
+    'apps.term',
+    'apps.virt',
+    'apps.log',
 ]
 
 MIDDLEWARE = [
@@ -97,9 +105,9 @@ DATABASES = {
         "ENGINE": os.environ.get("SQL_ENGINE", "django.db.backends.sqlite3"),
         "NAME": os.environ.get("POSTGRES_DB", BASE_DIR / "db.sqlite3"),
         "USER": os.environ.get("POSTGRES_USER", "user"),
-        "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "password"),
-        "HOST": os.environ.get("SQL_HOST", "localhost"),
-        "PORT": os.environ.get("SQL_PORT", "5432"),
+        "PASSWORD": os.environ.get("POSTGRES_PASSWORD"),
+        "HOST": os.environ.get("SQL_HOST"),
+        "PORT": os.environ.get("SQL_PORT"),
     }
 }
 
@@ -135,3 +143,5 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+ERROR_TEMPLATE = 'error.html'

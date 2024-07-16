@@ -10,5 +10,17 @@ def test(request):
     )
 
 
-class Terminal(TemplateView):
+class BaseTerminal(TemplateView):
+    template_name = 'terminal.html'
+
+
+class Terminal(BaseTerminal):
+    template_name = 'terminal.html'
+
+
+class MultiTerminal(BaseTerminal):
+    template_name = 'terminal.html'
+
+
+class ScriptTerminal(BaseTerminal):
     template_name = 'terminal.html'

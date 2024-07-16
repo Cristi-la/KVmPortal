@@ -69,3 +69,4 @@ window.addEventListener('load', () => {
     terminal.createQui(frame)
 
 })
+
