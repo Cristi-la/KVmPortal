@@ -4,7 +4,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from django.core.exceptions import ObjectDoesNotExist
 from channels.db import database_sync_to_async
 from asgiref.sync import sync_to_async
-from apps.term.ssh.interfaces import SSHInterface, Auth
+from apps.term.control.interface import SSHInterface, Auth
+from apps.term.control.host import Unix
 import logging
 
 logger = logging.getLogger(__name__)

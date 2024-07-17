@@ -1,4 +1,4 @@
-class TerminalManager {
+class Terminal {
   constructor() {
     this.term = null;
     this.fitAddon = null;

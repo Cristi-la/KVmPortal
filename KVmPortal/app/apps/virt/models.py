@@ -9,3 +9,7 @@ class Host(models.Model):
 
 class Vm(models.Model):
     pass
+
+
+class Interfaces(models.Model):
+    pass
