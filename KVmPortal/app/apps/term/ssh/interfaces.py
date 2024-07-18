@@ -46,7 +46,7 @@ class SSHInterface():
 
 
     def disconnect(self):
-        if self.error or self.close:
+        if self.is_active():
             return
         
         self.channel.close()
@@ -159,7 +159,7 @@ class SSHInterface():
         
 
     def is_active(self) -> bool:
-        return self.error or self.close or self.channel is None
+        return self.error or self.close or self.client is None or self.channel is None
 
 
 

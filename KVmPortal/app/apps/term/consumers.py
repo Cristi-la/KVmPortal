@@ -148,7 +148,7 @@ class TermConsumer(AsyncWebsocketConsumer):
 
             sshint = await self.__get_session()
 
-            if sshint is None or sshint.error or sshint.close:
+            if sshint.is_active():
                 return
 
             data = await sshint.read()
