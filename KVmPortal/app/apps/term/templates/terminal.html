@@ -24,7 +24,7 @@
     window.addEventListener('load', () => {
         const url = `ws://${window.location.host}/ws/term/session/`
         const frame = document.getElementById('terminal')
-        const terminal = new TerminalManager()
+        const terminal = new Terminal()
 
         terminal.init()
         terminal.createQui(frame)

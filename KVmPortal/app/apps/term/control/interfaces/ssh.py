@@ -5,27 +5,31 @@ import asyncio
 from io import StringIO
 from paramiko.ssh_exception import BadHostKeyException, AuthenticationException, SSHException
 
+
 @dataclass
 class Auth():
     ip_fqdn: str
-    port: int
     username: str
-    password: str
-    key: str
-    passphrase: str
+    password: str = None
 
-    def __init__(self, ip_fqdn, port, username, password, pkey, passphrase):
+    port: int = 22
+
+    pkey: str = None
+    passphrase: str = None
+
+    def __init__(self, ip_fqdn, username, port=22, password=None, pkey=None, passphrase=None, **kwargs):
         self.ip_fqdn = ip_fqdn
-        self.port = port
         self.username = username
+        self.port = port
         self.password = password
         self.pkey = pkey
         self.passphrase = passphrase
 
-       
         if pkey:
-            pkey_str = StringIO(self.pkey)
-            self.pkey = paramiko.RSAKey.from_private_key(pkey_str, password=self.passphrase)
+            pkey_str = StringIO(self.key)
+            self.pkey = paramiko.RSAKey.from_private_key(
+                pkey_str, password=self.passphrase)
+
 
 class SSHInterface():
     BUFFER_SIZE_LIMIT = 1024
@@ -44,11 +48,10 @@ class SSHInterface():
 
         self.pty_sizes = []
 
-
     def disconnect(self):
-        if self.is_active():
+        if not self.is_active():
             return
-        
+
         self.channel.close()
         self.client.close()
         self.close = True
@@ -59,63 +62,69 @@ class SSHInterface():
         loop = asyncio.get_running_loop()
 
         try:
-            await loop.run_in_executor(None, lambda: 
+            await loop.run_in_executor(None, lambda:
                 ssh.connect(
-                    hostname=self.auth.ip_fqdn, 
-                    port=self.auth.port, 
+                    hostname=self.auth.ip_fqdn,
+                    port=self.auth.port,
                     username=self.auth.username,
-                    password=self.auth.password, 
+                    password=self.auth.password,
                     pkey=self.auth.pkey,
-                )
+                )          
             )
-        except (BadHostKeyException, AuthenticationException, SSHException, socket.error) as e:
-            self.error = True
-            return None
-        
-        return ssh
+            
+        except BadHostKeyException:
+            raise Exception('Connection failed. Bad host key')
+        except AuthenticationException:
+            raise Exception('Connection failed. Authentication error')
+        except SSHException:
+            raise Exception('Connection failed. SSH error')
+        except socket.error as e:
+            raise Exception('Connection failed. Socket error', e)
+        except Exception as e:
+            raise Exception(f'Connection failed. {e}')
     
+        return ssh
+
     async def __open_channel(self):
         loop = asyncio.get_running_loop()
 
         try:
-            
-            transport = await loop.run_in_executor(None, self.ssh.get_transport)
+            transport = await loop.run_in_executor(None, self.client.get_transport)
             channel = await loop.run_in_executor(None, transport.open_session)
             await loop.run_in_executor(None, lambda: channel.get_pty(term=self.term_type))
             await loop.run_in_executor(None, channel.invoke_shell)
             channel.setblocking(0)
 
             return channel
-        
-        except (paramiko.SSHException, socket.error) as e:
-            self.error = True
-            return None
 
+        except (paramiko.SSHException) as e:
+            raise Exception('Connection failed. Could not open channel')
+        except (socket.error, socket.timeout) as e:
+            raise Exception('Connection failed. Socket error during channel opening', e)
 
     async def connect(self):
-        self.client = self.__connect_ssh()
+        self.client = await self.__connect_ssh()
 
         if self.client is None:
-            return
-        
-        self.channel = self.__open_channel()
-        
+            raise Exception('Connection failed. Could not connect to SSH server')
+
+        self.channel = await self.__open_channel()
+
         if self.channel is None:
-            return
+            raise Exception('Connection failed. Could not open channel')
         
 
     async def send(self, data):
         if not self.is_active():
             return
-        
+
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(None, self.channel.send, data)
-
 
     async def read(self):
         if not self.is_active():
             return
-        
+
         loop = asyncio.get_event_loop()
         try:
             data = await loop.run_in_executor(None, self.channel.recv, 1024)
@@ -137,29 +146,41 @@ class SSHInterface():
         self.pty_sizes.append((width, height))
         self.resize_terminals()
 
-
     async def del_size(self, width, height):
         if (width, height) in self.pty_sizes:
             self.pty_sizes.remove((width, height))
-
 
     async def resize_terminals(self):
         if not self.is_active():
             return
 
-        min_width = max(self.MIN_WIDTH, min(size[0] for size in self.pty_sizes))
-        min_height = max(self.MIN_HEIGHT, min(size[1] for size in self.pty_sizes))
+        min_width = max(self.MIN_WIDTH, min(
+            size[0] for size in self.pty_sizes))
+        min_height = max(self.MIN_HEIGHT, min(
+            size[1] for size in self.pty_sizes))
 
         loop = asyncio.get_running_loop()
         await loop.run_in_executor(
-            None, 
+            None,
             lambda: self.channel.resize_pty(width=min_width, height=min_height)
         )
-
-        
 
     def is_active(self) -> bool:
         return self.error or self.close or self.client is None or self.channel is None
 
 
+
+
+
+if __name__ == '__main__':
+    auth = Auth('localhost', 'Cristila', password='9907')
+    sshint = SSHInterface(auth=auth)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(sshint.connect())
+    loop.run_until_complete(sshint.send('ipconfig'))
+    
+    import time
+    time.sleep(2)
+
+    loop.run_until_complete(sshint.read())
 

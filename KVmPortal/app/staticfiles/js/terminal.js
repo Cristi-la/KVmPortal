@@ -1,98 +1,121 @@
-class TerminalManager {
-    constructor() {
-        this.term = null
-        this.fitAddon = null
-        this.socket = null
+class Terminal {
+  Failing = 'Failing' 
+  Work = 'Work'
+  Init = 'Init'
+  Undefined = 'Undefined'
+  Stopped = 'Stopped'
+  Abborted = 'Abborted'
+
+  stop_working = Array('Failing', 'Stopped', 'Abborted')
+
+  constructor() {
+    this.term = null;
+    this.fitAddon = null;
+    this.socket = null;
+    this.container = null;  
+    this.status = null;  
+    this.buffer = "";
+  }
+
+  init() {
+    let termOptions = {
+      cursorBlink: true,
+      theme: {
+        background: "black",
+        foreground: "white",
+        cursor: "white",
+      },
+    };
+
+    this.term = new window.Terminal(termOptions);
+    this.fitAddon = new window.FitAddon.FitAddon();
+
+    if (!this.term || !this.fitAddon) {
+      console.error("Terminal or FitAddon not initialized.");
+      return;
     }
 
-    init() {
-        let termOptions = {
-            cursorBlink: true,
-            theme: {
-                background: 'black',
-                foreground: 'white',
-                cursor: 'white'
-            }
-        };
+    this.term.loadAddon(this.fitAddon);
+  }
 
-        let term = new window.Terminal(termOptions)
-
-        this.fitAddon = new window.FitAddon.FitAddon()
-        term.loadAddon(this.fitAddon)
-
-        this.term = term;
+  createQui(container) {
+    if (!this.term || !container) {
+      console.warn("Document body used as terminal frame.");
+      return;
     }
+    this.container = container
+    this.term.open(container);
+    this.container.querySelector(".terminal").classList.toggle("fullscreen");
+    this.fitAddon.fit();
+    this.term.focus();
+    this._resize_setup();
+  }
 
-    createQui(container){
-        if (!this.term || !container) {
-            console.warn('Document body used as terminal frame.')
-            container = document.body
+  setWebSocket(socket) {
+    this.socket = socket;
+
+    if (!this.term) return;
+
+    this.term.onData((data) => {
+      this.sendData(JSON.stringify({ action: "execute", data: data }));
+    });
+  }
+
+  _resize_setup() {
+    let resizeTimer;
+    const resizeFunction = () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (this.term && this.fitAddon) {
+          this.performResize();
         }
+      }, 300);
+    };
+  
 
-        this.term.open(container);
-        container.querySelector('.terminal').classList.toggle('fullscreen');
-        this.fitAddon.fit();
-        this.term.focus()
-        this._reside_setup();
-    }
+    window.addEventListener('resize', resizeFunction);
+    window.addEventListener('beforeunload', resizeFunction);
+  }
+  
 
-    setWebSocket(socket) {
-        this.socket = socket;
+  sendData(data_json) {
+    console.debug("Sending data: ", data_json);
+    this.socket.send(data_json);
+  }
 
-        if (!this.term) return;
+  writeMessage(message) {
+    if (message.content) this.buffer += message.content;
+    if (this.term) this.term.write(message);
+  }
 
-        this.term.onData(data => {
-            this.sendData(JSON.stringify({'action': 'execute', 'data': data}));
-        });     
-    }
+  performResize() {
+    if (!this.term || !this.fitAddon || !this.socket || this.stop_working.includes(this.status)) return;
+    this._delTermSize();
 
-    
-    _reside_setup() {
-        let resizeTimer;
-        const resizeFunction = () => {
-            clearTimeout(resizeTimer);
-            resizeTimer = setTimeout(() => {
-                if (this.term && this.fitAddon) {
-                    this.performResize();
-                }
-            }, 300);
-        };
+    this.fitAddon.fit();
 
-        const observer = new MutationObserver(resizeFunction);
-        observer.observe(document.body, { attributes: true, childList: true, subtree: true });
+    const NewCols = this.term.cols;
+    const NewRows = this.term.rows;
+    this.sendData(
+      JSON.stringify({
+        action: "resize",
+        type: "new",
+        data: { cols: NewCols, rows: NewRows },
+      })
+    );
+    console.log("Resize performed");
+  }
 
-        window.addEventListener('beforeunload', () => {
-            observer.disconnect();
-        });
-    }
-
-    sendData(data_json) {
-        this.socket.send(data_json);
-    }
-
-    writeMessage(message) {
-        this.term.write(message)
-    }
-
-    performResize() {
-        if (!this.term || !this.fitAddon || !this.socket) return;
-        this._delTermSize()
-
-        this.fitAddon.fit();
-
-        const NewCols = this.term.cols;
-        const NewRows = this.term.rows;
-        this.sendData(JSON.stringify({'action': 'resize', 'type': 'new', 'data': {'cols': NewCols, 'rows': NewRows}}));
-        console.log('Resize performed')
-    }
-
-    _delTermSize() {
-        if (!this.term || !this.fitAddon || !this.socket) return;
-        const Cols = this.term.cols;
-        const Rows = this.term.rows;
-        this.sendData(JSON.stringify({'action': 'resize', 'type': 'del', 'data': {'cols': Cols, 'rows': Rows}}));
-    }
+  _delTermSize() {
+    if (!this.term || !this.fitAddon || !this.socket) return;
+    const Cols = this.term.cols;
+    const Rows = this.term.rows;
+    this.sendData(
+      JSON.stringify({
+        action: "resize",
+        type: "del",
+        data: { cols: Cols, rows: Rows },
+      })
+    );
+  }
 }
-
-
-
