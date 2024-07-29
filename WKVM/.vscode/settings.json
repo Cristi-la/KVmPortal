@@ -1,0 +1,21 @@
+{
+    "files.exclude": {
+        "env": true,
+        // // Production Docker FILES:
+        // "**/*.prod*": true,
+        // // "**/Dockerfile*": true,
+        // "**/app/worker.py": true,
+        // "**/docker-compose.*": true,
+        // "**/entrypoint.*": true,
+
+        // // Licence
+        // "LICENCE": true,
+        // "**/nginx": true,
+
+        // // All hidden files
+        // ".gitignore": true,
+    },
+    "editor.tokenColorCustomizations": {
+        "comments": "#36cc3e", // Sets comments to bright green
+    },
+}
