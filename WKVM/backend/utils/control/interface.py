@@ -4,11 +4,10 @@ from dataclasses import dataclass
 class Message:
     ...
 
-@dataclass
-class Response:
-    ...
-
 
 @dataclass
 class Auth:
     ...
+
+
+    

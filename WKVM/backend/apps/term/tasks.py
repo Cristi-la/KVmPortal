@@ -95,9 +95,8 @@ class SessionTask(Task):
         self.object_id = object_id
         self.content_type = content_type
         self.session = self.prepare()
-        print(self.session)
 
-        time.sleep(5)
+
         self.session.delete()
 
         return 'Task completed'

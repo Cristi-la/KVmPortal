@@ -5,7 +5,10 @@
 {% block meta  %}
 
     <script src="{% static 'vendor/xterm/xterm.js' %}"></script>
+    <script src="{% static 'vendor/xterm/xterm-addon-fit.min.js' %}"></script>
     <link href="{% static 'vendor/xterm/xterm.css' %}" rel="stylesheet">
+    
+    <script src="{% static 'js/terminal.js' %}"></script>
 
 {% endblock %}
 
@@ -18,32 +21,28 @@ Termianl TEST
 
 
 <script>
-    window.addEventListener('load', () => {
-        const termOptions = {
-            cursorBlink: true,
-            theme: {
-              background: "black",
-              foreground: "white",
-              cursor: "white",
-            },
-        };
-
-        const url = `ws://${window.location.host}/ws/term/session/1/`
-        const container = document.getElementById('terminal')
-
+    function setupSocket(url) {
 
         const socket = new WebSocket(url)
-        const term = new window.Terminal(termOptions);
-
-        term.open(container);
-        term.focus()
-
         socket.onmessage = (e) => {
             let data = JSON.parse(e.data);
             console.log("WebSocket message:", data);
-            term.write(data);
-
         }
+
+        return socket
+    }
+    window.addEventListener('load', () => {
+        const frame = document.getElementById('terminal')
+        const terminal = new Terminal()
+
+        terminal.init()
+        terminal.createQui(frame)
+
+        const url = `ws://${window.location.host}/ws/term/session/2/`
+        const socket = setupSocket(url)
+
+
+        terminal.setWebSocket(socket)
     })
 </script>
 

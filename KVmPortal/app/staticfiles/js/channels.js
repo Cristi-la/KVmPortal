@@ -21,6 +21,8 @@ class WebSocketManager {
       
     };
 
+
+
     this.websocket.onmessage = (e) => {
       try {
         let data = JSON.parse(e.data);
