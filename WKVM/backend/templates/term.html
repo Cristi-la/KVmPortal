@@ -2,48 +2,35 @@
 
 {% load static %}
 
-{% block meta  %}
+{% block meta %}
 
-    <script src="{% static 'vendor/xterm/xterm.js' %}"></script>
-    <script src="{% static 'vendor/xterm/xterm-addon-fit.min.js' %}"></script>
-    <link href="{% static 'vendor/xterm/xterm.css' %}" rel="stylesheet">
-    
-    <script src="{% static 'js/terminal.js' %}"></script>
+<script src="{% static 'vendor/xterm/xterm.js' %}"></script>
+<script src="{% static 'vendor/xterm/xterm-addon-fit.min.js' %}"></script>
+<link href="{% static 'vendor/xterm/xterm.css' %}" rel="stylesheet">
+
+<script src="{% static 'js/utils.js' %}"></script>
+<script src="{% static 'js/channels.js' %}"></script>
+<script src="{% static 'js/terminal.js' %}"></script>
+
 
 {% endblock %}
 
 
 
-{% block content  %}
+{% block content %}
 
 Termianl TEST
 <div id="terminal"></div>
 
 
 <script>
-    function setupSocket(url) {
+    const url = `ws://${window.location.host}/ws/term/session/`
+    const manager = new Manager(url)
 
-        const socket = new WebSocket(url)
-        socket.onmessage = (e) => {
-            let data = JSON.parse(e.data);
-            console.log("WebSocket message:", data);
-        }
-
-        return socket
-    }
     window.addEventListener('load', () => {
-        const frame = document.getElementById('terminal')
-        const terminal = new Terminal()
-
-        terminal.init()
-        terminal.createQui(frame)
-
-        const url = `ws://${window.location.host}/ws/term/session/2/`
-        const socket = setupSocket(url)
-
-
-        terminal.setWebSocket(socket)
+        manager.connect()
     })
+
 </script>
 
 {% endblock %}

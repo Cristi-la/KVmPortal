@@ -4,6 +4,7 @@ from io import StringIO
 import paramiko
 from utils.models import BaseInfo
 
+
 @dataclass
 class AuthData:
     ip_fqdn: str
@@ -16,7 +17,8 @@ class AuthData:
     def __post_init__(self):
         if self.pkey:
             pkey_str = StringIO(self.pkey)
-            self.pkey = paramiko.RSAKey.from_private_key(pkey_str, password=self.passphrase)
+            self.pkey = paramiko.RSAKey.from_private_key(
+                pkey_str, password=self.passphrase)
 
     def __str__(self):
         return f'AuthData({self.ip_fqdn}, {self.username})'
@@ -25,13 +27,13 @@ class AuthData:
 class Auth(models.Model):
     username = models.CharField(max_length=255)
     password = models.CharField(max_length=255, null=True, blank=True)
-    pkey = models.CharField(max_length=10, null=True, blank=True)
-    passphrase = models.CharField(max_length=16_384, null=True, blank=True)
+    pkey = models.CharField(max_length=16_384, null=True, blank=True)
+    passphrase = models.CharField(max_length=255, null=True, blank=True)
     port = models.PositiveIntegerField(default=22)
-    
+
     def __str__(self):
         return f'Auth({self.username})'
-    
+
     def data(self):
         return self.from_data(
             username=self.username,
@@ -67,14 +69,15 @@ class Hypervisor(Base):
     vms: models.QuerySet['VM']
 
     hostname = models.CharField(max_length=255)
-    
+
     def __str__(self):
         return self.hostname
 
+
 class VM(Base):
     name = models.CharField(max_length=255)
-    hypervisor = models.ForeignKey(Hypervisor, on_delete=models.CASCADE, related_name='vms')
-    
+    hypervisor = models.ForeignKey(
+        Hypervisor, on_delete=models.CASCADE, related_name='vms')
+
     def __str__(self):
         return self.name
-    

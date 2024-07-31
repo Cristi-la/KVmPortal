@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure-wmt@)!=uf-u%=ppcu4v@2oe3kz_%=pf+id_=41-dw3!^qn+y#i
 DEBUG = True
 
 ALLOWED_HOSTS = []
-
+SITE_ID = 1
 
 # Application definition
 
@@ -131,7 +131,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE =  'Europe/Warsaw'
+TIME_ZONE = 'Europe/Warsaw'
 
 USE_I18N = True
 
@@ -143,7 +143,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "../frontend" 
+    BASE_DIR / "../frontend"
 ]
 
 # Default primary key field type
