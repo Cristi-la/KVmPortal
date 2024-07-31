@@ -19,6 +19,8 @@ from channels.db import database_sync_to_async
 
 
 class Session(BaseTime):
+    get_downlink = lambda pk: f's{pk}_down'
+
     class Status(models.TextChoices):
         INIT = 'init', 'Init'
         RUNNING = 'running', 'Running'
@@ -52,12 +54,8 @@ class Session(BaseTime):
         )
 
     @property
-    def uplink_session_id(self) -> str:
-        return f's{self.pk}_up'
-
-    @property
-    def downlink_session_id(self) -> str:
-        return f's{self.pk}_down'
+    def downlink_id(self) -> str:
+        return Session.get_downlink(self.pk)
 
     class Meta:
         index_together = [('content_type', 'object_id')]

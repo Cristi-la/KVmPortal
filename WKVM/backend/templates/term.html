@@ -12,7 +12,7 @@
 <script src="{% static 'js/channels.js' %}"></script>
 <script src="{% static 'js/terminal.js' %}"></script>
 
-
+<link href="{% static 'css/terminal.css' %}" rel="stylesheet">
 {% endblock %}
 
 
@@ -24,12 +24,11 @@ Termianl TEST
 
 
 <script>
+    const sids = getSessionIDsFromURL(window.location.href)
     const url = `ws://${window.location.host}/ws/term/session/`
-    const manager = new Manager(url)
+    const manager = new Manager(url, sids)
 
-    window.addEventListener('load', () => {
-        manager.connect()
-    })
+    window.addEventListener('load', () => manager.connect())
 
 </script>
 

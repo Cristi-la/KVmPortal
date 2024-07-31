@@ -11,33 +11,32 @@ class TermConsumer(AsyncJsonWebsocketConsumer):
     # users = set()
     # channels = set()
 
-    # @database_sync_to_async
-    # def get_session(self) -> Session:
-    #     # session_id = self.scope['url_route']['kwargs']['session_id']
-    #     session_id = 1
+    @database_sync_to_async
+    def get_user_sessions(self) -> Session:
+        session = Session.objects.all().values_list('pk', flat=True)
 
-    #     try:
-    #         # Check permissions
-    #         session = Session.objects.get(pk=session_id)
-    #         if not session.enable_console:
-    #             session.consoleControl(enable=True)
-    #         return session
-    #     except Session.DoesNotExist:
-    #         # close the connection
-    #         ...
+        return list(session)
+    
+    @database_sync_to_async
+    def get_session_output(self, sid) -> Session:
+        self.user
+        try:
+            output = Session.objects.get(pk=sid).output
+            return output
+        except Session.DoesNotExist:
+            return ''
 
-    #     return None
 
     async def connect(self):
-        user = self.scope['user']
+        self.user = self.scope['user']
 
-        # if user.is_authenticated:
-        await self.accept()
-        # print(f'Open socket for {user}')
-        return
+        if self.user.is_authenticated:
+            await self.accept()
+            print(f'Open socket for: {self.user}')
+            return
 
         await self.close(code=4001)
-        print(f'Close socket for {user}')
+        print(f'Close socket for: {self.user}')
 
         # self.session: Session = await self.get_session()
         # print('Session:', self.session)
@@ -66,19 +65,32 @@ class TermConsumer(AsyncJsonWebsocketConsumer):
         # )
 
     async def receive_json(self, content, **kwargs):
-        # action = content.action
-        print('Receive:', content,
-              f'SEND->{ self.session.downlink_session_id}')
+        print('Receive:', content)
+        action = content.get('action')
+        sid = content.get('sid')
+        data = content.get('data')
 
-        # match action:
-        #     case Message.SESSIONS:
-        #         send()
 
-        #     await send()
+        match action:
+            case Message.SEND_DATA:
+                await self.send_group(sid, content=Message.data(data, sid))
 
-    async def send(self, sid, content):
+            case Message.GET_SESSIONS:
+                sids = await self.get_user_sessions()
+                await self.send_json(Message.session(sids))
+
+            case Message.GET_LOAD:
+                output = await self.get_session_output(sid)
+                await self.send_json(Message.load(output, sid))
+
+                # Adding user to channel layer group
+                await self.channel_layer.group_add(
+                    sid, self.channel_name
+                )
+
+    async def send_group(self, sid, content):
         await self.channel_layer.group_send(
-            self.session.downlink_session_id, {
+            sid, {
                 "type": "group.message",
                 "message": content
             }

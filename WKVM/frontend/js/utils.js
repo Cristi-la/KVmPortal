@@ -1,15 +1,16 @@
 class Message {
-  static SEND_DATA = "sd";
-  static SEND_SESSIONS = "ss";
-  static SEND_RESIZE = "sr";
-  static SEND_CLOSE = "sc";
-  static SEND_LOAD = "sl";
+  static SEND_DATA = "sd";          // client, server
 
-  static GET_DATA = "gd";
-  static GET_SESSIONS = "gs";
-  static GET_RESIZE = "gr";
-  static GET_CLOSE = "gc";
-  static GET_LOAD = "gl";
+  static SEND_SESSIONS = "ss";      // server
+  // static SEND_RESIZE = "sr";
+  // static SEND_CLOSE = "sc";
+  static SEND_LOAD = "sl";          // server
+
+  // static GET_DATA = "gd";
+  static GET_SESSIONS = "gs";       // client
+  // static GET_RESIZE = "gr";
+  // static GET_CLOSE = "gc";
+  static GET_LOAD = "gl";           // client
 
   constructor(data, sid, action) {
     this.data = data;
@@ -18,18 +19,11 @@ class Message {
   }
 
   toJSON() {
-    return {
+    return JSON.stringify({
       data: this.data,
       sid: this.sid,
       action: this.action,
-    };
-  }
-
-  equals(other) {
-    if (!(other instanceof this.constructor)) {
-      return false;
-    }
-    return JSON.stringify(this) === JSON.stringify(other);
+    })
   }
 
   static create(data, sid, action) {
@@ -44,20 +38,36 @@ class Message {
   static session = Message.create(
     "get_all_sessions",
     null,
-    Message.SEND_SESSIONS
+    Message.GET_SESSIONS
   );
 
-  static resize(...args) {
-    return Message.create(args[0], args[1], Message.SEND_RESIZE);
-  }
-  static close(sid) {
-    return Message.create("close_session", sid, Message.SEND_CLOSE);
-  }
+  // static resize(data, sid) {
+  //   return Message.create(data, sid, Message.SEND_RESIZE);
+  // }
+  // static close(sid) {
+  //   return Message.create("close_session", sid, Message.SEND_CLOSE);
+  // }
   static load(sids) {
-    return Message.create("get_session_content", sids, Message.SEND_LOAD);
+    return Message.create("get_session_content", sids, Message.GET_LOAD);
   }
 }
 
 function displayNotification(msg) {
   alert(msg);
+}
+
+
+
+function getSessionIDsFromURL(url) {
+  const urlObj = new URL(url);
+  const params = new URLSearchParams(urlObj.search);
+  const sessions = params.get('sessions');
+
+  // Check if 'sessions' parameter exists and split it into an array if it does
+  if (sessions) {
+      return sessions.split(',');
+  }
+
+  // Always return an array, even if no sessions are found
+  return [];
 }

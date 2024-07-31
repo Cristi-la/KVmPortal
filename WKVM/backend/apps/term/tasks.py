@@ -1,86 +1,28 @@
 from celery import shared_task, Task
-import time
-import asyncio
-# from channels.layers import get_channel_layer
-# from apps.term.control.interface import SSHInterface
-# from apps.term.models import Auth
-
-# def prep_channel(room_group_name):
-#     channel_layer = get_channel_layer()
-
-#     def send_message(data):
-#         asyncio.run(channel_layer.group_send(
-#             room_group_name, {
-#                 "type": "group_message", 
-#                 "message": data
-#             }
-#         ))
-#     return send_message
-
-
-# # @shared_task(bind=True)
-# # def update(self, num):
-# #     self.room_id = '5'
-# #     self.room_group_name = "session_%s" % self.room_id
-# #     channel_layer = get_channel_layer()
-
-
-# #     for i in range(5):
-# #         loop = asyncio.new_event_loop()
-# #         asyncio.set_event_loop(loop)
-        
-# #         print(i)
-# #         time.sleep(1)
-
-# #         loop.run_until_complete(channel_layer.group_send(
-# #             self.room_group_name, {
-# #                 "type": "group_message", 
-# #                 "message": f'Data{i}'
-# #             }
-# #         ))
-
-
-# #     loop = asyncio.new_event_loop()
-# #     asyncio.set_event_loop(loop)
-    
-# #     print(i)
-# #     time.sleep(1)
-
-# #     loop.run_until_complete(channel_layer.group_send(
-# #         self.room_group_name, {
-# #             "type": "group_message", 
-# #             "message": 'test'
-# #         }
-# #     ))
-
-# #     return 'Done'
-
-
-# @shared_task(bind=True)
-# def session_tasks(self, ip_fqdn, username, password):
-
-#     commands = ["ls --color=auto", "uname -a", "sleep 5","echo -e 'e[1;33mYellow Text\e[0m'", "uname -a", 'htop']
-#     room_id = '5'
-#     room_group_name = "session_%s" % room_id
-
-
-
-    
-#     auth = Auth.from_data(ip_fqdn, username, password)
-
-#     ssh = SSHInterface(auth, timeout=10)
-#     ssh.run(
-#         actions=commands,
-#         reader_handler=prep_channel(room_group_name)
-#     )
-
+from utils.control.ssh import SSHInterface
+from utils.control.interface import Message
 from apps.term.models import Session
 from backend.celery import app
+from channels.layers import get_channel_layer
+import asyncio
+
+def prep_channel(sid):
+    channel_layer = get_channel_layer()
+
+    def send_message(data):
+        asyncio.run(channel_layer.group_send(
+            sid, {
+                "type": "group.message",
+                "message": Message.data(data, sid)
+            }
+        ))
+    return send_message
+
 
 class SessionTask(Task):
     name = 'apps.term.tasks.SessionTask'
 
-    def prepare(self):
+    def prepare(self) -> Session:
         return Session.init(
             object_id=self.object_id,
             content_type=self.content_type,
@@ -95,9 +37,24 @@ class SessionTask(Task):
         self.object_id = object_id
         self.content_type = content_type
         self.session = self.prepare()
+        auth = self.session.content_object.auth
+        mgt_ip = self.session.content_object.mgt_ip
+        sid = str(self.session.pk)
+
+        ssh = SSHInterface(mgt_ip, auth)
+        ssh.buffer_handler = prep_channel(sid)
 
 
-        self.session.delete()
+        self.session.status = Session.Status.FAILED
+
+        if ssh.run(
+                actions=['ls --color=auto', 'uname -a', 'sleep 5', 'echo -e ddd', 'uname -a', 'htop'],
+            ):
+            self.session.status = Session.Status.COMPLETED
+
+
+        self.session.output = ssh.output
+        self.session.save()
 
         return 'Task completed'
     

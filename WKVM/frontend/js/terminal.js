@@ -1,10 +1,28 @@
 class Terminal {
+  static counter = 100;
+  static OPTIONS = {
+      cursorBlink: true,
+      theme: {
+          background: 'black',
+          foreground: 'white',
+          cursor: 'white'
+      }
+  };
+
+  upScaleContainerZIndex() {
+      Terminal.counter = Terminal.counter + 1;
+      this.container.style.zIndex = Terminal.counter;
+  }
+
+  LOADED = false;
+
   constructor(sid, manager) {
     this.sid = sid;
     this.manager = manager;
-    this.term = new window.Terminal(termOptions);
+    this.term = new window.Terminal(Terminal.OPTIONS);
     this.fitAddon = new window.FitAddon.FitAddon();
-    this.container = document.getElementById("terminal");
+    this.container = this.get_container();
+    this.upScaleContainerZIndex();
 
     if (!this.term || !this.fitAddon) {
       console.error("Terminal or FitAddon not initialized.");
@@ -13,6 +31,16 @@ class Terminal {
 
     this.term.loadAddon(this.fitAddon);
     this.init();
+    this.setupEvents();
+  }
+
+  get_container(){
+    const box = document.getElementById("terminal");
+    const newDiv = document.createElement("div");
+    newDiv.classList.add("window");
+    box.appendChild(newDiv);
+    
+    return newDiv;
   }
 
   init() {
@@ -29,16 +57,31 @@ class Terminal {
   }
 
   receiveData(data) {
-    console.log(`Terminal ${self.sid}, Received: ${data}`);
+    console.log(`Terminal ${this.sid}, Received: ${data}`);
     if (this.term) this.term.write(data);
   }
 
+  loadData(data) {  
+    this.LOADED = true; 
+    this.receiveData(data)
+    this.upScaleContainerZIndex();
+   }
+
   writeData(data) {
+    if (!this.LOADED) {
+      console.warn(`Terminal ${this.sid} not loaded yet. Received data will be ignored.`);
+      return;
+    }
+
     if (!this.manager) return;
 
-    console.log(`Terminal ${self.sid}, Write: ${data}`);
+    console.log(`Terminal ${this.sid}, Write: ${data}`);
     const message = Message.data(data, this.sid);
     this.manager.sendData(message);
+  }
+
+  setupEvents() {
+    this.term.onData(data => this.writeData(data));
   }
 
   //   _resize_setup() {
