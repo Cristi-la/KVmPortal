@@ -98,15 +98,6 @@ DATABASES = {
     }
 }
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
-        },
-    },
-}
-
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
 
@@ -151,9 +142,34 @@ STATICFILES_DIRS = [
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+REDIS_IP = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_CELERY_DB = 0
+REDIS_CONSUMER_DB = 1
+REDIS_CONTROLER_DB = 2
+
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
+        "CONFIG": {
+            "hosts":[{
+                "address": f'redis://{REDIS_IP}:{REDIS_PORT}',
+                "db": REDIS_CONSUMER_DB,
+            }]
+        }
+    }
+}
+
+# For testing purposes
+# CHANNEL_LAYERS = {
+#     "default": {
+#         "BACKEND": "channels.layers.InMemoryChannelLayer"
+#     }
+# }
 
 # Broker settings
-REDIS_URL = 'redis://127.0.0.1:6379'
+REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_CELERY_DB}'
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_CACHE_BACKEND = REDIS_URL

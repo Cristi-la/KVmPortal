@@ -38,11 +38,10 @@ class Manager {
 
     this.socket.onmessage = (event) => this.receiveData(event.data);
 
-
-    this.socket.onclose = (event) => {
-      console.log("WebSocket connection closed:", event);
-      // displayNotification();
-    };
+    // this.socket.onclose = (event) => {
+    //   console.log("WebSocket connection closed:", event);
+    //   // displayNotification();
+    // };
 
     // this.socket.onerror = (error) => {
     //   console.error("WebSocket error:", error);
@@ -60,34 +59,30 @@ class Manager {
   }
 
   receiveData(receiveData) {
-    // try {
-      const parsedData = JSON.parse(receiveData);
-      console.log(`Socket receive: ${receiveData}`);
-      const sid = parsedData.sid;
-      const action = parsedData.action;
-      const data = parsedData.data;
+    const parsedData = JSON.parse(receiveData);
+    console.log(`Socket receive: ${receiveData}`);
+    const sid = parsedData.sid;
+    const action = parsedData.action;
+    const data = parsedData.data;
+    const vis = parsedData.vis;
 
-      if (
-        action === Message.SEND_DATA &&  
-        sid in this.terminals &&
-        data
-      ) {
-        this.terminals[sid].receiveData(data);
-        return;
-      }
-
-      this.handleAction(action, data, sid);
-    // } catch (error) {
-    //   console.error("Failed to parse incoming data:", error);
-    // }
+    try {
+      this.handleAction(action, data, sid, vis);
+    } catch (error) {
+      console.error("Failed to parse incoming data:", error);
+    }
   }
 
-  handleAction(action, data, sid) {
+  handleAction(action, data, sid, vis) {
     switch (action) {
-      case Message.SEND_LOAD:
-        this.terminals[sid].loadData(data);
+      case Message.SEND_DATA:
+        if(sid in this.terminals && data) 
+          this.terminals[sid].receiveData(data);
         break;
 
+      case Message.SEND_LOAD:
+        this.terminals[sid].loadData(data, vis);
+        break;
 
       case Message.SEND_SESSIONS:
         this.createTerminals(data);

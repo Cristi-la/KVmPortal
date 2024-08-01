@@ -15,6 +15,8 @@ class Terminal {
   }
 
   LOADED = false;
+  READ_ONLY = true;
+  NAME = "hidden";
 
   constructor(sid, manager) {
     this.sid = sid;
@@ -23,6 +25,8 @@ class Terminal {
     this.fitAddon = new window.FitAddon.FitAddon();
     this.container = this.get_container();
     this.upScaleContainerZIndex();
+
+
 
     if (!this.term || !this.fitAddon) {
       console.error("Terminal or FitAddon not initialized.");
@@ -61,10 +65,18 @@ class Terminal {
     if (this.term) this.term.write(data);
   }
 
-  loadData(data) {  
-    this.LOADED = true; 
+  handleVisualData(vis) {
+    if (!vis) return;
+    this.NAME = vis?.name;
+    this.READ_ONLY = vis?.readonly
+  }
+
+  loadData(data, vis) {  
+    this.LOADED = true;
+    this.handleVisualData(vis);
     this.receiveData(data)
-    this.upScaleContainerZIndex();
+    this.upScaleContainerZIndex(); // To REMOVE/CHANGE
+    console.log(`Terminal ${this.sid} loaded`);
    }
 
   writeData(data) {
@@ -73,7 +85,7 @@ class Terminal {
       return;
     }
 
-    if (!this.manager) return;
+    if (!this.manager || this.READ_ONLY) return;
 
     console.log(`Terminal ${this.sid}, Write: ${data}`);
     const message = Message.data(data, this.sid);

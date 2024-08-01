@@ -13,21 +13,27 @@ class Message:
     # GET_CLOSE = "gc"
     GET_LOAD = "gl"
 
-    def __init__(self, data, sid, action) -> None:
+    def __init__(self, data, sid, action, vis) -> None:
         self.data = data
         self.sid = sid
         self.action = action
+        self.vis = vis
 
     def toPy(self):
-        return {
+        data = {
             "data": self.data,
             "sid": self.sid,
             "action": self.action
         }
 
+        if self.vis:
+            data['vis'] = self.vis
+
+        return data
+
     @classmethod
-    def create(cls, data, sid, action):
-        msg = cls(data, sid, action)
+    def create(cls, data, sid, action, vis=None):
+        msg = cls(data, sid, action, vis=vis)
         return msg.toPy()
     
     @staticmethod
@@ -48,5 +54,5 @@ class Message:
     
 
     @staticmethod
-    def load(data, sid):
-        return Message.create(data, sid, Message.SEND_LOAD)
+    def load(data, sid, vis=None):
+        return Message.create(data, sid, Message.SEND_LOAD, vis)

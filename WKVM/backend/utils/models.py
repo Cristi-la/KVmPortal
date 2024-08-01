@@ -8,7 +8,6 @@ class BaseTime(models.Model):
     class Meta:
         abstract = True
 
-
 class BaseInfo(BaseTime):
     description = models.TextField(null=True, blank=True)
 

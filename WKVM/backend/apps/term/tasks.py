@@ -19,15 +19,27 @@ def prep_channel(sid):
     return send_message
 
 
-class SessionTask(Task):
-    name = 'apps.term.tasks.SessionTask'
-
+class SessionDettach(Task):
     def prepare(self) -> Session:
         return Session.init(
             object_id=self.object_id,
             content_type=self.content_type,
         )
-        
+
+class SessionAttach(SessionDettach):
+    ...
+
+class ReadOnlySession(SessionAttach):
+    ...
+
+class ReadWriteSession(SessionAttach):
+    ...
+
+class SwapSession(SessionAttach):
+    ...
+
+class SessionTask(SessionAttach):
+
     def run(
             self, 
             object_id, 
@@ -75,3 +87,7 @@ class SessionTask(Task):
         print('Task revoked')
 
 SessionTask = app.register_task(SessionTask())
+
+@app.task(bind=True, ignore_result=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')

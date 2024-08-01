@@ -149,6 +149,7 @@ class SSHInterface:
 
     def buffer_handler(self, output):
         self.buffer += output
+        print(output, end='')
         
     def buffer_sys_handler(self, output):
         output = output + "\n"
