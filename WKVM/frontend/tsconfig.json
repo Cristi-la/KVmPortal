@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "outDir": "build",
+    "module": "esnext",
+    "target": "ES2021",
+
+    "allowJs": true,
+    "baseUrl": ".",
+    "esModuleInterop": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "noEmit": true,
+    "paths": { 
+      "*": ["./src/*"],
+      "@/*": ["./src/vendor/*"],
+    },
+    "skipLibCheck": true,
+    "types": ["webpack-env"],
+    "strict": true,
+  },
+  "include": ["./**/*.ts", "./**/*.tsx"],
+  "exclude": ["node_modules", "build", "**/*.js", "**/*.jsx"]
+}

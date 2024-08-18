@@ -28,17 +28,18 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 SITE_ID = 1
-
-# Application definition
+ADMINS = (("Admin", "foo@example.com"),)
+AUTH_USER_MODEL = "acc.Account"
 
 MY_APPS = [
     'apps.acc',
     'apps.term',
     'apps.kvm',
+    'apps.gui',
 ]
 
 INSTALLED_APPS = [
-    'daphne',
+    # 'daphne',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -47,15 +48,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
+    'webpack_loader', # Done
     'django_celery_results',
     'django_celery_beat',
-    'channels',
+    # 'channels',
     'django_extensions',
+    'defender',
+    'rest_framework',
+    'drf_spectacular',
 
     *MY_APPS,
 ]
 
+
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -63,6 +70,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # "csp.middleware.CSPMiddleware",
+    'defender.middleware.FailedLoginMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -117,24 +126,33 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
+#  Rest framework settings
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+SPECTACULAR_SETTINGS = {
+    "TITLE": "WKVM API",
+    "DESCRIPTION": "Web KVM API",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'Europe/Warsaw'
-
 USE_I18N = True
-
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [
-    BASE_DIR / "../frontend"
+    BASE_DIR / "../frontend/static"
 ]
 
 # Default primary key field type
@@ -147,6 +165,7 @@ REDIS_PORT = 6379
 REDIS_CELERY_DB = 0
 REDIS_CONSUMER_DB = 1
 REDIS_CONTROLER_DB = 2
+REDIS_DEFENDER_DB = 3
 
 
 CHANNEL_LAYERS = {
@@ -161,6 +180,17 @@ CHANNEL_LAYERS = {
     }
 }
 
+# Webpack
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "CACHE": DEBUG,
+        "STATS_FILE": BASE_DIR / "../frontend/webpack-stats.json",
+        "POLL_INTERVAL": 0.1,
+        "IGNORE": [r".+\.hot-update.js", r".+\.map"],
+    }
+}
+
+
 # For testing purposes
 # CHANNEL_LAYERS = {
 #     "default": {
@@ -168,11 +198,63 @@ CHANNEL_LAYERS = {
 #     }
 # }
 
+
+# Django-CSP
+# CSP_INCLUDE_NONCE_IN = ["script-src", "style-src", "font-src"]
+# CSP_SCRIPT_SRC = [
+#     "'self'",
+#     "'unsafe-inline'",
+#     "'unsafe-eval'",
+#     # drf-spectacular UI (Swagger and ReDoc)
+#     "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/",
+#     "https://cdn.jsdelivr.net/npm/redoc@latest/",
+#     "blob:",
+# ] + [f"*{host}" if host.startswith(".") else host for host in ALLOWED_HOSTS]
+# CSP_CONNECT_SRC = [
+#     "'self'",
+# ] + [f"*{host}" if host.startswith(".") else host for host in ALLOWED_HOSTS]
+# CSP_STYLE_SRC = [
+#     "'self'",
+#     "'unsafe-inline'",
+#     # drf-spectacular UI (Swagger and ReDoc)
+#     "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/",
+#     "https://cdn.jsdelivr.net/npm/redoc@latest/",
+#     "https://fonts.googleapis.com",
+# ]
+# CSP_FONT_SRC = [
+#     "'self'",
+#     "'unsafe-inline'",
+#     # drf-spectacular UI (Swagger and ReDoc)
+#     "https://fonts.gstatic.com",
+# ] + [f"*{host}" if host.startswith(".") else host for host in ALLOWED_HOSTS]
+# CSP_IMG_SRC = [
+#     "'self'",
+#     # drf-spectacular UI (Swagger and ReDoc)
+#     "data:",
+#     "https://cdn.jsdelivr.net/npm/swagger-ui-dist@latest/",
+#     "https://cdn.redoc.ly/redoc/",
+# ]
+
+
+# LOCAL_HOST_URL = "http://localhost:3000"
+# LOCAL_HOST_WS_URL = "ws://localhost:3000/ws"
+# CSP_SCRIPT_SRC += [LOCAL_HOST_URL, LOCAL_HOST_WS_URL]
+# CSP_CONNECT_SRC += [LOCAL_HOST_URL, LOCAL_HOST_WS_URL]
+# CSP_FONT_SRC += [LOCAL_HOST_URL]
+# CSP_IMG_SRC += [LOCAL_HOST_URL]
+
 # Broker settings
 REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_CELERY_DB}'
 CELERY_BROKER_URL = REDIS_URL
 CELERY_RESULT_BACKEND = REDIS_URL
 CELERY_CACHE_BACKEND = REDIS_URL
+
+# Django-defender
+DEFENDER_LOGIN_FAILURE_LIMIT = 3
+DEFENDER_COOLOFF_TIME = 300  # 5 minutes
+DEFENDER_LOCKOUT_TEMPLATE = "lockout.html"
+DEFENDER_REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_DEFENDER_DB}'
+
 
 # Queue settings
 CELERY_TASK_QUEUES = (
@@ -194,9 +276,46 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
-# CACHES = {
-#     'default': {
-#         'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
-#         'LOCATION': 'my_cache_table',
-#     }
+# Static files handlers (CSS, JavaScript, Images)
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                # "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
+
+
+
+# # Logging
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "standard": {
+#             "format": "%(levelname)-8s [%(asctime)s] [%(correlation_id)s] %(name)s: %(message)s"
+#         },
+#     },
+#     "handlers": {
+#         "console": {
+#             "level": "DEBUG",
+#             "class": "logging.StreamHandler",
+#             "formatter": "standard",
+#         },
+#     },
+#     "loggers": {
+#         "": {"handlers": ["console"], "level": "INFO"},
+#         "celery": {"handlers": ["console"], "level": "INFO"},
+#         "django_guid": {
+#             "handlers": ["console"],
+#             "level": "WARNING",
+#             "propagate": False,
+#         },
+#     },
 # }
+
+
+
+

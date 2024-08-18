@@ -6,4 +6,6 @@ urlpatterns = [
     path('kvm/', include('apps.kvm.urls')),
     path('acc/', include('apps.acc.urls')),
     path('term/', include('apps.term.urls')),
+
+    path('', include('apps.gui.urls')),
 ]
