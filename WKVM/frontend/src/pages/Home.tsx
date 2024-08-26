@@ -1,22 +1,79 @@
 import {Layout} from 'layouts/Layout'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb"
+import { useToast } from "@/components/ui/use-toast"
+import { Button } from "@/components/ui/button"
+import { ToastAction } from "@/components/ui/toast"
+
+import React, {useContext} from 'react';
+import AuthContext from 'context/AuthContext'
 
 export default  function Home() {
+  const { toast } = useToast();
+  const { test } = useContext(AuthContext);
+
   return (
-    <Layout className='backdrop-brightness-150' fixed>
+    <Layout fixed>
       <Layout.Header sticky>
-        <span>header</span>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">Home</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
       </Layout.Header>
 
       <Layout.Body>
-          <span>body</span>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Quae eveniet blanditiis quidem placeat ex laborum hic, magnam aut temporibus numquam nihil veritatis eaque saepe iure, eum reiciendis odit dolorem harum!
-          Facere, consectetur numquam voluptas eligendi vero quasi saepe, ad consequatur quis blanditiis alias eius iste unde, doloribus repellat. Laborum aliquid asperiores totam, dolores hic quae libero maxime explicabo distinctio autem.
-          Sunt voluptates, exercitationem, iste temporibus dicta unde, perferendis ipsam voluptatum harum magni voluptate? Quis consequatur ullam quibusdam animi at sed iste suscipit, excepturi quos fugit incidunt, doloremque ipsam repellat. Amet!
-          Explicabo asperiores nihil reiciendis necessitatibus velit aut omnis ad laboriosam iure officia. Saepe omnis animi vero dolor nam necessitatibus, nostrum, culpa adipisci aut iure, perferendis amet ut quos quaerat aperiam.
-          Eius possimus maxime sunt molestias quibusdam labore? Officia facere earum error dicta blanditiis deleniti. Dolore blanditiis saepe nobis quia distinctio, unde officiis, sed laboriosam doloribus a odit eaque suscipit ut!
-      
+          <span>{test}</span>
+
+          <Button
+            onClick={() => {
+              toast({
+                title: "Scheduled: Catch up",
+                description: "Friday, February 10, 2023 at 5:57 PM",
+                variant: "destructive",
+                action: <ToastAction altText="Try again">Try again</ToastAction>,
+              })
+            }}
+          >Success</Button>
+
+          <Button
+            onClick={() => {
+              toast({
+                title: "Scheduled: Catch up",
+                description: "Friday, February 10, 2023 at 5:57 PM",
+              })
+            }}
+          >Normal</Button>
+
+
+          <Button
+            onClick={() => {
+              toast({
+                title: "Scheduled: Catch up",
+                description: "Friday, February 10, 2023 at 5:57 PM",
+              })
+            }}
+          >Danger</Button>
+
           
-          </Layout.Body>
+      </Layout.Body>
 
       <Layout.Footer>
           <span>footer</span>

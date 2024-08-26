@@ -27,6 +27,7 @@ npm-debug.log
 /frontend/bundles/*
 /frontend/webpack_bundles/*
 /frontend/webpack-stats.json
+/frontend/src/api/*
 
 
 # General

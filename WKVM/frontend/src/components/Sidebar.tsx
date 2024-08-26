@@ -54,7 +54,7 @@ export default function Sidebar({
         {/* Header */}
         <Layout.Header
           sticky
-          className='z-50 flex justify-between px-4 py-3 shadow-sm md:px-4'
+          className='overflow-hidden z-50 flex justify-between px-4 py-3 shadow-sm md:px-4'
         >
           <div className={`flex items-center ${!isCollapsed ? 'gap-2' : ''}`}>
             <FaceIcon width={26} height={26} />
@@ -88,20 +88,19 @@ export default function Sidebar({
         
         <Nav
           id='sidebar-menu'
-          className={`z-40 h-full flex-1 overflow-auto ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
+          className={`overflow-hidden z-40 h-full flex-1 ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
           closeNav={() => setNavOpened(false)}
           isCollapsed={isCollapsed}
           links={sidelinks}
         />
 
         <Layout.Footer
-          // sticky
-          className={`z-50 justify-between px-4 py-3 shadow-sm md:px-4 items-center hidden md:block`}
+          className={`overflow-hidden z-50 justify-between px-4 py-3 shadow-sm md:px-4 items-center hidden md:block`}
         >
           <>
             <div className={`flex flex-col items-center transition-[margin] ${isCollapsed ? 'mb-0' : 'mb-4'}`}>
               <ThemeSwitch />
-              <span className={`flex flex-col items-center overflow-hidden ${isCollapsed ? 'hidden' : ''}`}>
+              <span className={`flex flex-col items-center ${isCollapsed ? 'hidden' : ''}`}>
                 <DocLink to='about'>Documenation</DocLink>
                 <DocLink to='about'>Help</DocLink>
               </span>

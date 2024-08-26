@@ -19,8 +19,8 @@ class HypervisorAdmin(BaseInfoAdmin):
 
 
 class VMAdmin(BaseInfoAdmin):
-    list_display = ('name', 'mgt_ip', 'hypervisor')
-    search_fields = ('name', 'mgt_ip')
+    list_display = ('name', 'hypervisor', 'vcpu', 'memory')
+    search_fields = ('name', 'mgt_ip', 'vcpu', 'memory')
     list_filter = ('hypervisor', 'tags')
 
 

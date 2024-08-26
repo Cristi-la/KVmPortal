@@ -1,0 +1,19 @@
+
+
+body {
+    overflow: hidden;
+    background-color: rgb(2, 31, 1);
+}
+
+#terminal, .window {
+    min-height: 100% !important;
+    min-width: 100% !important;
+}
+
+#terminal {
+    position: relative
+}
+
+.window {
+    position: absolute;
+}

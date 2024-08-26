@@ -45,7 +45,7 @@ export const sidelinks: SideLink[] = [
             {
                 title: 'Database',
                 label: '',
-                href: '/hypervisor',
+                href: '/hypervisor/db',
                 icon: <Database size={18} strokeWidth={1} />,
             },
             {
@@ -65,7 +65,7 @@ export const sidelinks: SideLink[] = [
             {
                 title: 'Database',
                 label: '',
-                href: '/vm',
+                href: '/vm/db',
                 icon: <Database size={16} strokeWidth={1} />,
             },
             {

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from io import StringIO
 import paramiko
 from utils.models import BaseInfo
-
+from django.core.exceptions import ValidationError
 
 @dataclass
 class AuthData:
@@ -32,8 +32,10 @@ class Auth(models.Model):
     port = models.PositiveIntegerField(default=22)
 
     def __str__(self):
-        
-        return f'Auth({self.username})'
+        method = 'password' if self.password else 'pkey'
+        lead = 'Auth' if self.pk != 1 else 'DefaultAuth'
+
+        return f'{lead}({self.username}, method={method}, port={self.port})'
 
 class Tag(BaseInfo):
     name = models.CharField(max_length=255)
@@ -44,18 +46,19 @@ class Tag(BaseInfo):
 
 
 class Base(BaseInfo):
-    mgt_ip = models.GenericIPAddressField()
-    auth = models.OneToOneField(Auth, on_delete=models.CASCADE)
     tags = models.ManyToManyField(Tag, blank=True)
 
     class Meta:
         abstract = True
 
-
 class Hypervisor(Base):
     vms: models.QuerySet['VM']
 
     hostname = models.CharField(max_length=255)
+
+    # Only for development process
+    mgt_ip = models.GenericIPAddressField()
+    auth = models.ForeignKey(Auth, default=1, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.hostname
@@ -65,6 +68,9 @@ class VM(Base):
     name = models.CharField(max_length=255)
     hypervisor = models.ForeignKey(
         Hypervisor, on_delete=models.CASCADE, related_name='vms')
+    vcpu = models.PositiveIntegerField(blank=True, null=True)
+    memory = models.PositiveIntegerField(blank=True, null=True)
+    
 
     def __str__(self):
         return self.name
