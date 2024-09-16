@@ -1,20 +1,17 @@
-import {Layout} from 'layouts/Layout'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { useToast } from "@/components/ui/use-toast"
-import { Button } from "@/components/ui/button"
-import { ToastAction } from "@/components/ui/toast"
 import { UserAuthForm } from 'components/user-auth-form'
+import { Button } from '@/components/ui/button'
+import { ApiService } from 'vendor/api/services.gen';
 
 export default function Login() {
     return (
       <>
+                <Button
+            onClick={() => {
+              ApiService.apiVmList().then((res) => {
+                console.log(res)
+              })
+            }}
+          ></Button>
         <div className='container relative grid h-svh flex-col items-center justify-center lg:max-w-none lg:grid-cols-2 lg:px-0'>
           <div className='relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex'>
             <div className='absolute inset-0 bg-zinc-900' />

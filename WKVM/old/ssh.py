@@ -1,181 +1,158 @@
-from dataclasses import dataclass
-import socket
+
 import paramiko
-import asyncio
-from io import StringIO
-from paramiko.ssh_exception import BadHostKeyException, AuthenticationException, SSHException
+from threading import Thread
+from apps.kvm.models import Auth
+import logging
+import socket
+from functools import wraps
+from paramiko.ssh_exception import (
+    AuthenticationException,
+    BadAuthenticationType,
+    BadHostKeyException,
+    ChannelException,
+    ConfigParseError,
+    CouldNotCanonicalize,
+    MessageOrderError,
+    PasswordRequiredException,
+    ProxyCommandFailure,
+    SSHException,
+)
 
 
-@dataclass
-class Auth():
-    ip_fqdn: str
-    username: str
-    password: str = None
-    port: int = 22
-    pkey: str = None
-    passphrase: str = None
-
-    def __init__(self, ip_fqdn, username, password=None, port=22, pkey=None, passphrase=None, **kwargs):
-        self.ip_fqdn = ip_fqdn
-        self.username = username
-        self.port = port
-        self.password = password
-        self.pkey = pkey
-        self.passphrase = passphrase
-
-        if pkey:
-            pkey_str = StringIO(self.key)
-            self.pkey = paramiko.RSAKey.from_private_key(
-                pkey_str, password=self.passphrase)
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
-class SSHInterface():
+def handle_auth_exceptions(func):
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        try:
+            return func(self, *args, **kwargs)
+        except PasswordRequiredException:
+            self.buffer_sys_handler("Password is required for this operation.")
+        except BadAuthenticationType as e:
+            self.buffer_sys_handler(f"Bad authentication type encountered: {e.allowed_types}")
+        except BadHostKeyException:
+            self.buffer_sys_handler("The host key could not be verified.")
+        except ChannelException as e:
+            self.buffer_sys_handler(f"Problem with the SSH channel: {e.text}")
+        except ConfigParseError:
+            self.buffer_sys_handler("Error parsing SSH configuration.")
+        except CouldNotCanonicalize:
+            self.buffer_sys_handler("Unable to canonicalize address.")
+        except AuthenticationException:
+            self.buffer_sys_handler("Authentication failed - wrong credentials.")
+        except MessageOrderError:
+            self.buffer_sys_handler("Invalid order of SSH messages received.")
+        except ProxyCommandFailure:
+            self.buffer_sys_handler("Failure due to proxy command.")
+        except SSHException as e:
+            self.buffer_sys_handler(f"SSH error occurred: {e}")
+        except socket.timeout:
+            self.buffer_sys_handler("The connection timed out.")
+        except socket.gaierror:
+            self.buffer_sys_handler("Address-related error connecting to server.")
+        except socket.error as e:
+            self.buffer_sys_handler(f"Socket error occurred: {e}")
+        except Exception as e:
+            self.buffer_sys_handler(f"An unexpected error occurred: {e}")
+        return None
+
+    return wrapper
+
+
+handle_shell_exceptions = handle_auth_exceptions
+
+class SSHInterface:
     BUFFER_SIZE_LIMIT = 1024
     MIN_WIDTH = 80
     MIN_HEIGHT = 24
+    MIN_TIMEOUT = 0
+    TERM_TYPE = 'xterm'
 
-    def __init__(self,  term_type='xterm', auth=None, **kwargs):
-        self.error = False
-        self.close = False
+    buffer = ""
+    sys_buffer = ""
 
-        self.term_type = term_type
+    def __init__(self, ip_fqdn, auth: Auth, **kwargs):
+        self.ip_fqdn = ip_fqdn
         self.auth = auth
+        self.client = paramiko.SSHClient()
+        self.client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        self.shell = None
 
-        self.channel = None
-        self.client = None
+        self.height = self.MIN_HEIGHT
+        self.width = self.MIN_WIDTH
 
-        self.pty_sizes = []
-
-    def disconnect(self):
-        if not self.is_active():
-            return
-
-        self.channel.close() # check later
-        self.client.close()
-        self.close = True
-
-    async def __connect_ssh(self):
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        loop = asyncio.get_running_loop()
-
-        try:
-            await loop.run_in_executor(None, lambda:
-                ssh.connect(
-                    hostname=self.auth.ip_fqdn,
-                    port=self.auth.port,
-                    username=self.auth.username,
-                    password=self.auth.password,
-                    pkey=self.auth.pkey,
-                )          
-            )
-            
-        except BadHostKeyException:
-            raise Exception('Connection failed. Bad host key')
-        except AuthenticationException:
-            raise Exception('Connection failed. Authentication error')
-        except SSHException:
-            raise Exception('Connection failed. SSH error')
-        except socket.error as e:
-            raise Exception('Connection failed. Socket error', e)
-        except Exception as e:
-            raise Exception(f'Connection failed. {e}')
-    
-        return ssh
-
-    async def __open_channel(self):
-        loop = asyncio.get_running_loop()
-
-        try:
-            transport = await loop.run_in_executor(None, self.client.get_transport)
-            channel = await loop.run_in_executor(None, transport.open_session)
-            await loop.run_in_executor(None, lambda: channel.get_pty(term=self.term_type))
-            await loop.run_in_executor(None, channel.invoke_shell)
-            channel.setblocking(0)
-
-            return channel
-
-        except (paramiko.SSHException) as e:
-            raise Exception('Connection failed. Could not open channel')
-        except (socket.error, socket.timeout) as e:
-            raise Exception('Connection failed. Socket error during channel opening', e)
-
-    async def connect(self):
-        self.client = await self.__connect_ssh()
-
-        if self.client is None:
-            raise Exception('Connection failed. Could not connect to SSH server')
-
-        self.channel = await self.__open_channel()
-
-        if self.channel is None:
-            raise Exception('Connection failed. Could not open channel')
-        
-
-    async def send(self, data):
-        if not self.is_active():
-            return
-
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(None, self.channel.send, data)
-
-    async def read(self):
-        if not self.is_active():
-            return
-
-        loop = asyncio.get_event_loop()
-        try:
-            data = await loop.run_in_executor(None, self.channel.recv, 1024)
-            decoded_data = data.decode('utf-8')
-            return decoded_data
-        except (paramiko.buffered_pipe.PipeTimeout, socket.timeout):
-            pass
-
-        if data is not None and data != '':
-            updated_buffer = self.__get_buffer(self.id) + data
-            self.__set_buffer(self.id, updated_buffer)
-
-            if len(updated_buffer) >= self.BUFFER_SIZE_LIMIT:
-                await self.__update_content(self.id)
-
-        return data
-
-    async def add_size(self, width, height):
-        self.pty_sizes.append((width, height))
-        self.resize_terminals()
-
-    async def del_size(self, width, height):
-        if (width, height) in self.pty_sizes:
-            self.pty_sizes.remove((width, height))
-
-    async def resize_terminals(self):
-        if not self.is_active():
-            return
-        min_width = max(self.MIN_WIDTH, min(size[0] for size in self.pty_sizes))
-        min_height = max(self.MIN_HEIGHT, min(size[1] for size in self.pty_sizes))
-
-        loop = asyncio.get_running_loop()
-        await loop.run_in_executor(
-            None,
-            lambda: self.channel.resize_pty(width=min_width, height=min_height)
+    @handle_auth_exceptions
+    def __connect(self):
+        self.client.connect(
+            hostname=self.ip_fqdn,
+            port=self.auth.port,
+            username=self.auth.username,
+            password=self.auth.password,
+            pkey=self.auth.pkey,
+            passphrase=self.auth.passphrase
         )
+        logger.info("SSH connection established.")
 
-    def is_active(self) -> bool:
-        return not (self.error or self.close or self.client is None or self.channel is None)
+        return True
 
+    @handle_shell_exceptions
+    def __invoke_shell(self):
+        self.shell = self.client.invoke_shell(
+            term=self.TERM_TYPE,
+            width=self.width,
+            height=self.height,
+        )
+        logger.info("SSH connection established.")
 
+        return True
 
+    def __read(self):
+        try:
+            while not self.shell.exit_status_ready():
+                if self.shell.recv_ready():
+                    output = self.shell.recv(1024).decode('utf-8')
+                    self.buffer_handler(output) 
+        finally:
+            logger.info("Final output captured from the session.")
 
+    def __start_threads(self, actions):
+        thread_executor = Thread(target=self.__perform, args=(actions, ))
+        thread_reader = Thread(target=self.__read, args=())
 
-if __name__ == '__main__':
-    auth = Auth('localhost', 'Cristila', password='9907')
-    sshint = SSHInterface(auth=auth)
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(sshint.connect())
-    loop.run_until_complete(sshint.send('ipconfig'))
+        thread_executor.start()
+        thread_reader.start()
+
+        thread_executor.join()
+        thread_reader.join()
+
+    def __perform(self, actions):
+        for command in actions:
+            self.shell.send(command + "\n")
+        print("All actions completed.")
     
-    import time
-    time.sleep(2)
 
-    loop.run_until_complete(sshint.read())
+    def run(self, actions):
+        self.__connect()
+
+        if not self.__connect():
+            self.buffer_handler("Client not initialized.")
+            return
+
+        if not self.__invoke_shell():
+            self.buffer_handler("Shell not initialized.")
+            return
+        
+        logger.info("Interactive SSH session started.")
+        self.__start_threads(actions)
+
+    def buffer_handler(self, output):
+        self.buffer += output
+        print(output, end='')
+        
+    def buffer_sys_handler(self, output):
+        output = output + "\n"
+        self.buffer_handler(output)
+        self.sys_buffer += output
 

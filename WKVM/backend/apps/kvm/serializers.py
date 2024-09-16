@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from apps.kvm.models import Auth, Tag, Hypervisor, VM
+from rest_flex_fields import FlexFieldsModelSerializer
 
-print(Hypervisor._meta.get_fields())
 
 # Meta serializers
 class VMAbstractSerializer(serializers.ModelSerializer):
@@ -19,29 +19,27 @@ class TagAbstractSerializer(serializers.ModelSerializer):
         model = Tag
         fields = ['id', 'name', 'description', 'color']
 
+
+class BaseSerializer(FlexFieldsModelSerializer):
+    ...
+
+
 # Acuall serializers
-class TagSerializer(serializers.ModelSerializer):
+class TagSerializer(BaseSerializer):
     class Meta:
         model = Tag
         fields = '__all__'
 
-# Acuall serializers
-class TagSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = '__all__'
 
-class HypervisorSerializer(serializers.ModelSerializer):
+class HypervisorSerializer(BaseSerializer):
     tags = TagAbstractSerializer(many=True, read_only=True)
     vms = VMAbstractSerializer(many=True, read_only=True)
 
     class Meta:
         model = Hypervisor
-        fields = Hypervisor._meta.get_fields()
-        fields = ['id', 'hostname', 'mgt_ip', 'tags', 'vms', 'description', 'created', 'updated']
+        fields = '__all__'
 
-
-class VMSerializer(serializers.ModelSerializer):
+class VMSerializer(BaseSerializer):
     hypervisor = HypervisorAbstractSerializer(read_only=True)
     tags = TagAbstractSerializer(many=True, read_only=True)
 

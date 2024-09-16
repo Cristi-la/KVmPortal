@@ -1,7 +1,7 @@
 import { Moon, Sun } from "lucide-react"
  
 import { Button } from "@/components/ui/button"
-import {useTheme} from "layouts/theme-provider"
+import {useTheme} from "layouts/ThemeLayout"
 import {
   DropdownMenu,
   DropdownMenuContent,

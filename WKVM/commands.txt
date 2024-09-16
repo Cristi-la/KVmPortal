@@ -1,44 +1,0 @@
-Linux kvmtest 6.6.20+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.6.20-1+rpt1 (2024-03-07) aarch64
-
-The programs included with the Debian GNU/Linux system are free software;
-the exact distribution terms for each program are described in the
-individual files in /usr/share/doc/*/copyright.
-
-Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
-permitted by applicable law.
-Last login: Wed Jul 24 22:02:32 2024 from 192.168.8.101
-echo 'Hello, SSH World!'
-***************************************************
-*                                                 *
-*      Welcome to USB Management Switch           *
-*                                                 *
-***************************************************
-                                                   
-          No connected consoles detected.          
-                                                   
-  Run 'profile' to display this prompt once again  
-              UMS © 2024 K.S. , M.S.               
-                                                   
-[?2004hkvm@kvmtest:~$ echo 'Hello, SSH World!'
-[?2004lHello, SSH World!
-[?2004hkvm@kvmtest:~$ ls -l
-[?2004ltotal 52
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:05 Bookshelf
--rw-r--r-- 1 kvm pi     3 Apr  7 18:39 cat
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Desktop
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Documents
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Downloads
-drwxr-xr-x 5 kvm kvm 4096 May  8 20:36 ManagementSwitch
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Music
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Pictures
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Public
--rw-r--r-- 1 kvm pi   153 Apr  7 19:01 README.md
-drwxr-xr-x 4 kvm pi  4096 May  4 18:59 scripts.old
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Templates
-drwxr-xr-x 2 kvm pi  4096 Mar 15 16:12 Videos
-[?2004hkvm@kvmtest:~$ sleep 2
-[?2004luname -a
-[?2004hkvm@kvmtest:~$ uname -a
-[?2004lLinux kvmtest 6.6.20+rpt-rpi-2712 #1 SMP PREEMPT Debian 1:6.6.20-1+rpt1 (2024-03-07) aarch64 GNU/Linux
-[?2004hkvm@kvmtest:~$ exit
-[?2004llogout

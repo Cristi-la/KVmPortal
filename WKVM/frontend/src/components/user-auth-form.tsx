@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { PasswordInput } from 'components/password-input'
 import { cn } from '@/lib/utils'
-import React, {useContext} from 'react';
+import {useContext} from 'react';
 import AuthContext from 'context/AuthContext';
 
 interface UserAuthFormProps extends HTMLAttributes<HTMLDivElement> {}
@@ -36,8 +36,7 @@ const formSchema = z.object({
 })
 
 export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const { login } = useContext(AuthContext)
+  const { login, user } = useContext(AuthContext)!;
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,7 +47,12 @@ export function UserAuthForm({ className, ...props }: UserAuthFormProps) {
   })
 
   function onSubmit(data: z.infer<typeof formSchema>) {
-    login()
+    login(data.username, data.password)
+      .then(() => {
+        if (!user) {
+          // Reset password logic here
+        }
+      })
   }
 
   return (

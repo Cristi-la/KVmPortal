@@ -1,5 +1,5 @@
 from django.apps import AppConfig
-
+from django.conf import settings
 
 class CommonConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
@@ -7,4 +7,19 @@ class CommonConfig(AppConfig):
 
 
     def ready(self):
-        import apps.common.signals
+        from django.db.models.signals import post_migrate
+        post_migrate.connect(self.create_instance, sender=self)
+
+    def create_instance(self, sender, **kwargs):
+        from apps.common.models import Instance
+
+        if settings.SITE_ID is None:
+            return
+        
+        obj, _ = Instance.objects.get_or_create(id=settings.SITE_ID)
+        obj.domain = 'localhost'
+        obj.name = 'root'
+        obj.save()
+        
+
+

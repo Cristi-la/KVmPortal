@@ -2,13 +2,14 @@ from django.contrib import admin
 from django.urls import path, include
 from apps.kvm.urls import routes as kvm_routes
 from apps.common.urls import routes as common_routes
+from apps.acc.urls import routes as acc_routes
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
 
-# router = (common_routes + kvm_routes)
+router = (common_routes + kvm_routes + acc_routes)
 
 
 urlpatterns = [
@@ -16,7 +17,7 @@ urlpatterns = [
     path('kvm/', include('apps.kvm.urls')),
     path('term/', include('apps.term.urls')),
 
-    # path("api/", include(router.export), name="api"),
+    path("api/", include(router.export), name="api"),
     
     # drf-spectacular
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
@@ -31,7 +32,9 @@ urlpatterns = [
         name="redoc",
     ),
 
+    
+    # user
+    path('', include('apps.acc.urls')),
     # index
     path('', include('apps.common.urls')),
-
 ]

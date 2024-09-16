@@ -11,14 +11,18 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+import { useContext } from 'react'
+import AuthContext from 'context/AuthContext'
+
 export default function ProfileNav() {
-  const user = 'jsef'
+  const { user, logout } = useContext(AuthContext)!
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant='ghost' className=' relative h-10 w-10 rounded-full'>
           <Avatar className='h-10 w-10 border-2 border-secondary'>
-            <AvatarImage src={`https://api.dicebear.com/9.x/pixel-art/svg?seed=${user}`} alt='user-ico' />
+            <AvatarImage src={`https://api.dicebear.com/9.x/pixel-art/svg?seed=${user?.username}`} alt='user-ico' />
             <AvatarFallback>SN</AvatarFallback>
           </Avatar>
         </Button>
@@ -49,7 +53,7 @@ export default function ProfileNav() {
           <DropdownMenuItem>New Team</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={()=> logout()}>
           Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>

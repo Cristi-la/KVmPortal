@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+  <meta name="description" content="" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="shortcut icon" href="#" />
+
+</head>
+<body>
+
+    <h1>Debugging</h1>
+
+    <div class="progress">
+        <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <p id="progress-percent">0%</p>
+    
+    <button id="start-task-btn">Start Task</button>
+    
+    <script>
+        const socket = new WebSocket(`ws://${window.location.host}/ws/tasks/`);
+    
+        socket.onmessage = function(event) {
+            const data = JSON.parse(event.data);
+            console.log(data);
+
+            const step = data?.step;
+            const total_steps = data?.total_steps;
+            
+            if (step && total_steps) {
+                const percentComplete = (step / total_steps) * 100;
+    
+                // Update progress bar or display percentage
+                document.getElementById("progress-bar").style.width = `${percentComplete}%`;
+                document.getElementById("progress-percent").innerText = `${percentComplete.toFixed(2)}%`;
+            }
+        };
+    
+        socket.onclose = function(event) {
+            console.log('WebSocket closed');
+        };
+    
+        document.getElementById('start-task-btn').addEventListener('click', function() {
+            // Send message to backend WebSocket to start task
+            socket.send(JSON.stringify({
+                'action': 'start_task'
+            }));
+        });
+    </script>
+
+</body>
+</html>
+
+

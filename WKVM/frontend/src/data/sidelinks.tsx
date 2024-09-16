@@ -49,7 +49,7 @@ export const sidelinks: SideLink[] = [
                 icon: <Database size={18} strokeWidth={1} />,
             },
             {
-                title: 'Priovision',
+                title: 'Provisioning',
                 label: 'test',
                 href: '/hypervisor/provision',
                 icon: <GitPullRequestArrow size={18} strokeWidth={1} />,

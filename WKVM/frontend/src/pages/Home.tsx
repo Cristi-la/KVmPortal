@@ -6,20 +6,20 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb"
-import { useToast } from "@/components/ui/use-toast"
+} from "vendor/components/ui/breadcrumb"
+import { toast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { ToastAction } from "@/components/ui/toast"
 
 import React, {useContext} from 'react';
 import AuthContext from 'context/AuthContext'
+import { ApiService } from 'vendor/api'
 
 export default  function Home() {
-  const { toast } = useToast();
-  const { test } = useContext(AuthContext);
+  const { user } = useContext(AuthContext)!;
 
   return (
-    <Layout fixed>
+    <Layout>
       <Layout.Header sticky>
         <Breadcrumb>
           <BreadcrumbList>
@@ -39,8 +39,8 @@ export default  function Home() {
 
       </Layout.Header>
 
-      <Layout.Body>
-          <span>{test}</span>
+      <Layout.Body className=''>
+          {/* <span>{user.username}</span> */}
 
           <Button
             onClick={() => {
@@ -71,6 +71,24 @@ export default  function Home() {
               })
             }}
           >Danger</Button>
+
+          <Button
+            onClick={() => {
+              ApiService.apiVmList();
+              
+              console.log("user context", user.exp)
+            }}
+          >
+            send q
+          </Button>
+
+
+
+
+          <form>
+            <input type="text" />
+            <input type="submit" value="dupa" />
+          </form>
 
           
       </Layout.Body>

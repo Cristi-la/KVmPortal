@@ -1,35 +1,24 @@
-import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter as Router } from 'react-router-dom';
-import { ThemeProvider } from 'layouts/theme-provider'
+import { BrowserRouter as Router, RouterProvider } from 'react-router-dom';
+import { ThemeProvider } from 'layouts/ThemeLayout'
 import { Toaster } from '@/components/ui/toaster'
-import cookie from "cookie";
-
-import App from "App";
-import 'styles/globals.css';
-import { OpenAPI } from "@/api";
 import  { AuthProvider } from 'context/AuthContext';
+import App from "App";
 
-
-OpenAPI.interceptors.request.use((request) => {
-    const { csrftoken } = cookie.parse(document.cookie);
-    if (request.headers && csrftoken) {
-      request.headers["X-CSRFTOKEN"] = csrftoken;
-    }
-    return request;
-});
+import 'styles/globals.css';
+import 'utils/interceptors'
 
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    <React.StrictMode>
-        <ThemeProvider defaultTheme='dark' storageKey='vite-ui-theme'>
-            <Router>
-                <AuthProvider>
+    // <React.StrictMode>
+        <Router>
+            <AuthProvider>
+                <ThemeProvider>
                     <App />
-                </AuthProvider>
-            </Router>
-            <Toaster />
-        </ThemeProvider>
-    </React.StrictMode>
+                    <Toaster />
+                </ThemeProvider>
+            </AuthProvider>
+        </Router>
+    // </React.StrictMode>
 );
   

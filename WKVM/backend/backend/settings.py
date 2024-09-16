@@ -14,19 +14,37 @@ from pathlib import Path
 from kombu import Queue, Exchange
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# UTILS DATA
 BASE_DIR = Path(__file__).resolve().parent.parent
+REDIS_IP = '127.0.0.1'
+REDIS_PORT = 6379
+REDIS_CELERY_DB = 0
+REDIS_CONSUMER_DB = 1
+REDIS_CONTROLER_DB = 2
+REDIS_DEFENDER_DB = 3
+REDIS_COMON_CACHE = 4
+
+################################
+#  ###### SECURITY SETTINGS
+################################
 SECRET_KEY = 'django-insecure-wmt@)!=uf-u%=ppcu4v@2oe3kz_%=pf+id_=41-dw3!^qn+y#i'
 DEBUG = True
-
+# Django-defender
+DEFENDER_LOGIN_FAILURE_LIMIT = 10
+DEFENDER_COOLOFF_TIME = 300  # 5 minutes
+DEFENDER_LOCKOUT_TEMPLATE = "lockout.html"
+DEFENDER_REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_DEFENDER_DB}'
 ALLOWED_HOSTS = []
 SITE_ID = 1
 ADMINS = (("Admin", "foo@example.com"),)
-AUTH_USER_MODEL = "common.Account"
+AUTH_USER_MODEL = "acc.Account"
 
+################################
+#  ###### Apps section
+################################
 MY_APPS = [
     'apps.common',
-
+    'apps.acc',
     'apps.term',
     'apps.kvm',
 ]
@@ -44,8 +62,11 @@ INSTALLED_APPS = [
     'webpack_loader',
     'django_celery_results',
     'django_celery_beat',
+    
     'channels',
     'defender',
+
+    'django_filters',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
     'drf_spectacular',
@@ -67,8 +88,30 @@ MIDDLEWARE = [
     # 'defender.middleware.FailedLoginMiddleware',
 ]
 
+
+
+################################
+#  ###### REST API SETTINGS
+################################
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsSetPagination",
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated",],
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "WKVM API",
+    "DESCRIPTION": "Web KVM API",
+    "VERSION": "0.1.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "ACCESS_TOKEN_LIFETIME": timedelta(seconds=5),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
@@ -86,9 +129,11 @@ SIMPLE_JWT = {
     "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
     "USER_ID_FIELD": "id",
     "USER_ID_CLAIM": "user_id",
-    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+    "USER_AUTHENTICATION_RULE": "apps.acc.authentication.account_authentication_rule",
 
-    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "AUTH_TOKEN_CLASSES": (
+        "rest_framework_simplejwt.tokens.AccessToken",
+    ),
     "TOKEN_TYPE_CLAIM": "token_type",
     "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
 
@@ -106,6 +151,10 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
 
+
+################################
+#  ###### Django core settings
+################################
 ROOT_URLCONF = 'backend.urls'
 
 TEMPLATES = [
@@ -126,22 +175,14 @@ TEMPLATES = [
     },
 ]
 
-# WSGI_APPLICATION = 'backend.wsgi.application'
+
 ASGI_APPLICATION = 'backend.asgi.application'
-
-# Database
-# https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# Password validation
-# https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -157,27 +198,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-#  Rest framework settings
-REST_FRAMEWORK = {
-    "DEFAULT_PAGINATION_CLASS": "apps.common.pagination.StandardResultsSetPagination",
-    # "PAGE_SIZE": 10, # TODO: test if this i required
-    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
-
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ],
-    "DEFAULT_PERMISSION_CLASSES": [
-        "rest_framework.permissions.IsAuthenticated",
-    ],
-}
-
-SPECTACULAR_SETTINGS = {
-    "TITLE": "WKVM API",
-    "DESCRIPTION": "Web KVM API",
-    "VERSION": "0.1.0",
-    "SERVE_INCLUDE_SCHEMA": False,
-}
-
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'Europe/Warsaw'
 USE_I18N = True
@@ -188,19 +208,13 @@ STATICFILES_DIRS = [
     BASE_DIR / "../frontend/static"
 ]
 
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-REDIS_IP = '127.0.0.1'
-REDIS_PORT = 6379
-REDIS_CELERY_DB = 0
-REDIS_CONSUMER_DB = 1
-REDIS_CONTROLER_DB = 2
-REDIS_DEFENDER_DB = 3
 
 
+################################
+#  ## DJANGO CHANNELS SETTINGS
+################################
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.pubsub.RedisPubSubChannelLayer",
@@ -213,6 +227,59 @@ CHANNEL_LAYERS = {
     }
 }
 
+
+# CACHES = {
+#     'default': {
+#         'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+#         'LOCATION': f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_COMON_CACHE}'
+#     }
+# }
+################################
+#  ###### Celery settings
+################################
+REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_CELERY_DB}'
+CELERY_BROKER_URL = REDIS_URL
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = REDIS_URL
+
+# Queues
+CELERY_TASK_QUEUES = (
+    Queue('critical', Exchange('critical'), routing_key='critical'),
+    Queue('medium', Exchange('medium'), routing_key='medium'),
+    Queue('low', Exchange('low'), routing_key='low'),
+)
+CELERY_TASK_DEFAULT_QUEUE = 'medium'
+
+# Task settings
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_ENABLE_UTC = True
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_RESULT_EXTENDED = True
+CELERY_TASK_TRACK_STARTED = True
+# CELERY_TASK_TIME_LIMIT = 30 * 60
+
+
+# CELERY_TASK_ALWAYS_EAGER = False
+# CELERY_TASK_EAGER_PROPAGATES = False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Webpack
 WEBPACK_LOADER = {
     "DEFAULT": {
@@ -223,13 +290,6 @@ WEBPACK_LOADER = {
     }
 }
 
-
-# For testing purposes
-# CHANNEL_LAYERS = {
-#     "default": {
-#         "BACKEND": "channels.layers.InMemoryChannelLayer"
-#     }
-# }
 
 
 # Django-CSP
@@ -276,38 +336,10 @@ WEBPACK_LOADER = {
 # CSP_FONT_SRC += [LOCAL_HOST_URL]
 # CSP_IMG_SRC += [LOCAL_HOST_URL]
 
-# Broker settings
-REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_CELERY_DB}'
-CELERY_BROKER_URL = REDIS_URL
-CELERY_RESULT_BACKEND = REDIS_URL
-CELERY_CACHE_BACKEND = REDIS_URL
-
-# Django-defender
-DEFENDER_LOGIN_FAILURE_LIMIT = 10
-DEFENDER_COOLOFF_TIME = 300  # 5 minutes
-DEFENDER_LOCKOUT_TEMPLATE = "lockout.html"
-DEFENDER_REDIS_URL = f'redis://{REDIS_IP}:{REDIS_PORT}/{REDIS_DEFENDER_DB}'
 
 
-# Queue settings
-CELERY_TASK_QUEUES = (
-    Queue('critical', Exchange('critical'), routing_key='critical'),
-    Queue('medium', Exchange('medium'), routing_key='medium'),
-    Queue('low', Exchange('low'), routing_key='low'),
-)
-CELERY_TASK_DEFAULT_QUEUE = 'medium'
-
-# Task settings
-CELERY_TIMEZONE = TIME_ZONE
-CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_ACCEPT_CONTENT = ['application/json']
-
-# CELERY_TASK_TIME_LIMIT = 30 * 60
 
 
-CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Static files handlers (CSS, JavaScript, Images)
 STORAGES = {

@@ -1,5 +1,4 @@
 from django.shortcuts import render
-from apps.term.tasks import SessionTask, debug_task
 from apps.term.models import Session
 
 def test(request):

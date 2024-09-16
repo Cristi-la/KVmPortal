@@ -26,6 +26,7 @@ export default function Sidebar({
   isCollapsed,
   setIsCollapsed,
 }: SidebarProps) {
+  
   const [navOpened, setNavOpened] = useState(false)
 
   /* Make body not scrollable when navBar is opened */
@@ -54,7 +55,7 @@ export default function Sidebar({
         {/* Header */}
         <Layout.Header
           sticky
-          className='overflow-hidden z-50 flex justify-between px-4 py-3 shadow-sm md:px-4'
+          className=' z-50 flex justify-between px-4 py-3 shadow-sm md:px-4'
         >
           <div className={`flex items-center ${!isCollapsed ? 'gap-2' : ''}`}>
             <FaceIcon width={26} height={26} />
@@ -88,7 +89,7 @@ export default function Sidebar({
         
         <Nav
           id='sidebar-menu'
-          className={`overflow-hidden z-40 h-full flex-1 ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
+          className={` z-40 h-full flex-1 ${navOpened ? 'max-h-screen' : 'max-h-0 py-0 md:max-h-screen md:py-2'}`}
           closeNav={() => setNavOpened(false)}
           isCollapsed={isCollapsed}
           links={sidelinks}

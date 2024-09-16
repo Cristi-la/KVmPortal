@@ -4,6 +4,8 @@ from celery import Celery
 from django.conf import settings
 from .celerybeat_schedule import CELERYBEAT_SCHEDULE
 from decouple import config
+import warnings
+warnings.filterwarnings(action='ignore', module='.*paramiko.*')
 
 settings_module = config("DJANGO_SETTINGS_MODULE", default='backend.settings')
 if settings_module is None:
@@ -15,12 +17,8 @@ if settings_module is None:
     sys.exit(1)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", settings_module)
 
-
-
-app = Celery("backend_tasks")
-
-app.conf.timezone = settings.TIME_ZONE
-
+app = Celery()
 app.config_from_object('django.conf:settings', namespace='CELERY')
-app.autodiscover_tasks()
-app.conf.update(CELERYBEAT_SCHEDULE=CELERYBEAT_SCHEDULE)
+# app.conf.update(CELERYBEAT_SCHEDULE=CELERYBEAT_SCHEDULE)
+
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS)

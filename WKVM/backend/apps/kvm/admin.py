@@ -1,5 +1,5 @@
 from django.contrib import admin
-from apps.kvm.models import Auth, Tag, Hypervisor, VM
+from apps.kvm.models import Auth, Tag, Hypervisor, VM, XMLData
 from utils.admin import BaseInfoAdmin, BaseTimeAdmin
 
 class AuthAdmin(admin.ModelAdmin):
@@ -24,7 +24,13 @@ class VMAdmin(BaseInfoAdmin):
     list_filter = ('hypervisor', 'tags')
 
 
+class XMLAdmin(BaseTimeAdmin):
+    list_display = ('xml_type', 'created', 'updated')
+    search_fields = ('xml_type',)
+
+
 admin.site.register(Auth, AuthAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Hypervisor, HypervisorAdmin)
 admin.site.register(VM, VMAdmin)
+admin.site.register(XMLData, XMLAdmin)

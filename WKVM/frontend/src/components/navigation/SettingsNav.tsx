@@ -14,7 +14,6 @@ interface SettingsNavProps extends React.HTMLAttributes<HTMLDivElement> {
     isCollapsed: boolean
 }
 
-
 export default function SettingsNav({
     isCollapsed,
 }: SettingsNavProps) {

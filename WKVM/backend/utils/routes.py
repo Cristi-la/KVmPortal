@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from typing import List
 from rest_framework.routers import DefaultRouter
 from rest_framework import viewsets
+from channels.generic.websocket import AsyncWebsocketConsumer
 
 @dataclass
 class Route:
@@ -12,10 +13,12 @@ class Route:
 
 
 class RouteMap:
-    def __init__(self, *Routes: Route):
-        self.routes: List[Route] = Routes
+    ROUTE_TYPE = Route
 
-    def add_route(self, route: Route):
+    def __init__(self, *Routes: ROUTE_TYPE):
+        self.routes: List[self.ROUTE_TYPE] = Routes
+
+    def add_route(self, route: ROUTE_TYPE):
         self.routes.append(route)
     
     def __add__(self, other: 'RouteMap') -> 'RouteMap':

@@ -8,14 +8,12 @@ import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import Home from "./pages/Home";
 import HypervisorsList from './pages/hypervisors/HypervisorsList';
+import HypervisorDetails from './pages/hypervisors/HypervisorDetails';
+import HypervisorsProvisioning from './pages/hypervisors/HypervisorsProvisioning';
 import VmsList from './pages/vms/VmsList';
 import PageTitle from './components/PageTitle';
 import OutLayout from './layouts/OutLayout';
-
-
 import ProtectedRoute from './utils/ProtectedRoute';
-
-
 
 const App = () => (
   <>
@@ -30,13 +28,13 @@ const App = () => (
               </>
             }
           />
-          <Route path='hypervisor/'>
+          <Route path='hypervisor'>
             <Route
-              index
+              path=":id"
               element={
                 <>
-                  <PageTitle title="Hypervisors detail" />
-                  DUPA
+                  <PageTitle title="Hypervisor details" />
+                  <HypervisorDetails />
                 </>
               }
             />
@@ -49,6 +47,16 @@ const App = () => (
                 </>
               }
             />
+            <Route
+              path="provision"
+              element={
+                <>
+                  <PageTitle title="Hypervisors provisioning" />
+                  <HypervisorsProvisioning />
+                </>
+              }
+            />
+            
           </Route>
           <Route
             path="vm"
