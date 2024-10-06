@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
-import { Badge } from '@/components/ui/badge';
+import { Tag } from 'components/Tag';
 import { TagAbstract } from '@/api/types.gen';
 
 interface TagsCellProps<TData, TValue>
@@ -21,34 +20,19 @@ export function ColumnCellTags<TData, TValue>({
   
     return (
       <div className="relative flex gap-2 whitespace-nowrap" {...props}>
-        {/* Display the first few badges */}
         {visibleTags.map((tag: TagAbstract) => (
-          <Badge
-            key={tag.id}
-            style={{ backgroundColor: tag.color }}
-            className="px-1 py-0.5 text-xs text-nowrap mix-blend-difference"
-          >
-            {tag.name}
-          </Badge>
+          <Tag color={tag.color} key={tag.id}>{tag.name}</Tag>
         ))}
   
-        {/* Ellipsis for hidden tags */}
         {hasHiddenTags && (
           <div className="relative group cursor-pointer">
             <span className="text-muted-foreground text-xs">...</span>
-            {/* Hoverable container that shows only the hidden tags */}
             <div
               className="absolute left-0 top-full z-10 hidden group-hover:flex flex-wrap gap-1 bg-secondary p-2 rounded shadow-lg"
               style={{ minWidth: '150px' }}
             >
               {hiddenTags.map((tag: TagAbstract) => (
-                <Badge
-                  key={tag.id}
-                  style={{ backgroundColor: tag.color }}
-                  className="px-1 py-0.5 text-xs text-nowrap mix-blend-difference"
-                >
-                  {tag.name}
-                </Badge>
+                <Tag color={tag.color} key={tag.id}>{tag.name}</Tag>
               ))}
             </div>
           </div>

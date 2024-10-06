@@ -16,7 +16,7 @@ class CommonConfig(AppConfig):
         if settings.SITE_ID is None:
             return
         
-        obj, _ = Instance.objects.get_or_create(id=settings.SITE_ID)
+        obj, _ = Instance.objects.update_or_create(id=settings.SITE_ID)
         obj.domain = 'localhost'
         obj.name = 'root'
         obj.save()

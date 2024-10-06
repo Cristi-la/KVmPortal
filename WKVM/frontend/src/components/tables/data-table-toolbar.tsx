@@ -2,7 +2,7 @@ import { CircleX } from 'lucide-react'
 import { Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { DataTableViewOptions } from './data-table-view-options'
-import { DebouncedInput } from 'components/customised/DebouncedInput'
+import { DebouncedInput } from 'components/fields/DebouncedInput'
 import type { DataTableFacetedFilterProps } from './data-table-faceted-filter';
 import {DataTableFacetedFilter} from './data-table-faceted-filter'
 

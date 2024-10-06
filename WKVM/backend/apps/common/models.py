@@ -31,6 +31,9 @@ class Instance(Site):
     @name: models.CharField
     #objects: SiteManager
     '''
+
+    def __str__(self):
+        return self.name
     
     class Meta:
         proxy = True

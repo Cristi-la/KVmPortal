@@ -19,7 +19,6 @@ class Processor:
         bound_tasks = []
         for task in tasks:
             if callable(task):
-                # Wrap the task with a context checker
                 bound_tasks.append(self._wrap_task_with_context(task))
             else:
                 raise ValueError(f"Task {task} is not callable")
@@ -29,11 +28,9 @@ class Processor:
 
         task_signature = inspect.signature(task)
         if 'context' in task_signature.parameters:
-            # Task accepts `context`, so pass it along with other args/kwargs
             def wrapped_task(*args, **kwargs):
                 return task(context=self.context, *args, **kwargs)
         else:
-            # Task does not accept `context`, so pass args/kwargs without context
             def wrapped_task(*args, **kwargs):
                 return task(*args, **kwargs)
 
@@ -125,9 +122,8 @@ class BaseStep(BaseChannel):
         self.request.last_step += 1
         self.send_progress(self.request.last_step, detail, fail=fail)
 
-    def run_process(self, proc: Processor, skip: bool = True, **kwargs):
+    def run_process(self, proc: Processor, **kwargs):
         self.request.last_step, self.request.total_steps = proc.get_steps()
-        self.request.skip = skip
 
         buffer = []
 

@@ -62,7 +62,7 @@ export default function Sidebar({
             <div
               className={`flex flex-col justify-end truncate ${isCollapsed ? 'invisible w-0' : 'visible w-auto'}`}
             >
-              <span className='font-medium text-warning-foreground'>Web KVM</span>
+              <span className='font-medium text-primary'>Web KVM</span>
               <span className='text-xs'>Version 1.0.0</span>
             </div>
           </div>

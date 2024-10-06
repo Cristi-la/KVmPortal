@@ -3,7 +3,7 @@
 import type { CancelablePromise } from './core/CancelablePromise';
 import { OpenAPI } from './core/OpenAPI';
 import { request as __request } from './core/request';
-import type { ApiHypervisorListData, ApiHypervisorListResponse, ApiHypervisorRetrieveData, ApiHypervisorRetrieveResponse, ApiStatusRestCheckRetrieveResponse, ApiTagListData, ApiTagListResponse, ApiTagRetrieveData, ApiTagRetrieveResponse, ApiTokenCreateData, ApiTokenCreateResponse, ApiTokenRefreshCreateData, ApiTokenRefreshCreateResponse, ApiVmListData, ApiVmListResponse, ApiVmRetrieveData, ApiVmRetrieveResponse } from './types.gen';
+import type { ApiHypervisorListData, ApiHypervisorListResponse, ApiHypervisorRetrieveData, ApiHypervisorRetrieveResponse, ApiHypervisorXmlRetrieveData, ApiHypervisorXmlRetrieveResponse, ApiStatusRestCheckRetrieveResponse, ApiTagListResponse, ApiTagRetrieveData, ApiTagRetrieveResponse, ApiTokenCreateData, ApiTokenCreateResponse, ApiTokenRefreshCreateData, ApiTokenRefreshCreateResponse, ApiVmListData, ApiVmListResponse, ApiVmRetrieveData, ApiVmRetrieveResponse, ApiVmXmlRetrieveData, ApiVmXmlRetrieveResponse } from './types.gen';
 
 export class ApiService {
     /**
@@ -67,6 +67,27 @@ export class ApiService {
     }
     
     /**
+     * Retrieve XML data by type for the hypervisor
+     * @param data The data for the request.
+     * @param data.id A unique integer value identifying this hypervisor.
+     * @param data.xmlType Type of the XML data
+     * @returns XMLData
+     * @throws ApiError
+     */
+    public static apiHypervisorXmlRetrieve(data: ApiHypervisorXmlRetrieveData): CancelablePromise<ApiHypervisorXmlRetrieveResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/hypervisor/{id}/xml/',
+            path: {
+                id: data.id
+            },
+            query: {
+                xml_type: data.xmlType
+            }
+        });
+    }
+    
+    /**
      * Check REST API
      * This endpoint checks if the REST API is working.
      * @returns Message
@@ -80,40 +101,13 @@ export class ApiService {
     }
     
     /**
-     * @param data The data for the request.
-     * @param data.color
-     * @param data.created
-     * @param data.description
-     * @param data._export Format of the exported data (csv, excel, json)
-     * @param data.fields Comma-separated list of fields to include in the output
-     * @param data.instance
-     * @param data.name
-     * @param data.ordering Which field to use when ordering the results.
-     * @param data.page A page number within the paginated result set.
-     * @param data.pageSize Number of results to return per page.
-     * @param data.search A search term.
-     * @param data.updated
-     * @returns PaginatedTagList
+     * @returns Tag
      * @throws ApiError
      */
-    public static apiTagList(data: ApiTagListData = {}): CancelablePromise<ApiTagListResponse> {
+    public static apiTagList(): CancelablePromise<ApiTagListResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/tag/',
-            query: {
-                color: data.color,
-                created: data.created,
-                description: data.description,
-                export: data._export,
-                fields: data.fields,
-                instance: data.instance,
-                name: data.name,
-                ordering: data.ordering,
-                page: data.page,
-                page_size: data.pageSize,
-                search: data.search,
-                updated: data.updated
-            }
+            url: '/api/tag/'
         });
     }
     
@@ -181,6 +175,7 @@ export class ApiService {
      * @param data.page A page number within the paginated result set.
      * @param data.pageSize Number of results to return per page.
      * @param data.search A search term.
+     * @param data.state
      * @param data.tags
      * @param data.updated
      * @param data.vcpu
@@ -205,6 +200,7 @@ export class ApiService {
                 page: data.page,
                 page_size: data.pageSize,
                 search: data.search,
+                state: data.state,
                 tags: data.tags,
                 updated: data.updated,
                 vcpu: data.vcpu,
@@ -225,6 +221,27 @@ export class ApiService {
             url: '/api/vm/{id}/',
             path: {
                 id: data.id
+            }
+        });
+    }
+    
+    /**
+     * Retrieve XML data by type for the hypervisor
+     * @param data The data for the request.
+     * @param data.id A unique integer value identifying this vm.
+     * @param data.xmlType Type of the XML data
+     * @returns XMLData
+     * @throws ApiError
+     */
+    public static apiVmXmlRetrieve(data: ApiVmXmlRetrieveData): CancelablePromise<ApiVmXmlRetrieveResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/vm/{id}/xml/',
+            path: {
+                id: data.id
+            },
+            query: {
+                xml_type: data.xmlType
             }
         });
     }

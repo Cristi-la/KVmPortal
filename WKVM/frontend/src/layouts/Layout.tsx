@@ -4,14 +4,17 @@ import { cn } from '@/lib/utils'
 const LayoutContext = React.createContext<{
   offset: number
   fixed: boolean
+  base: boolean
 } | null>(null)
 
 interface LayoutProps extends React.HTMLAttributes<HTMLDivElement> {
   fixed?: boolean
+  base?: boolean
+  offset?: number
 }
 
 
-const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
+const Layout = ({ className, fixed = false, base = false, ...props }: LayoutProps) => {
   const divRef = React.useRef<HTMLDivElement>(null)
   const [offset, setOffset] = React.useState(0)
 
@@ -28,7 +31,7 @@ const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
 
   
   return (
-    <LayoutContext.Provider value={{ offset, fixed }}>
+    <LayoutContext.Provider value={{ offset, fixed, base, }}>
       <div
         ref={divRef}
         data-layout={Layout.displayName}
@@ -37,7 +40,7 @@ const Layout = ({ className, fixed = false, ...props }: LayoutProps) => {
           fixed && 'flex flex-col',
           className
         )}
-        {...props}
+        {...props }
       />
     </LayoutContext.Provider>
   )
@@ -50,15 +53,16 @@ const Body = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => {
-  const { fixed } = React.useContext(LayoutContext)!;
+  const { fixed, base } = React.useContext(LayoutContext)!;
 
   return (
     <div
       ref={ref}
       data-layout={Body.displayName}
       className={cn(
-        'px-4 py-6 md:overflow-hidden md:px-8 w-100',
+        'px-4 py-4 md:overflow-hidden md:px-8',
         fixed && 'flex-1',
+        base && 'bg-scondary dark:bg-secondary/20',
         className
       )}
       {...props}
@@ -103,13 +107,25 @@ const Footer = React.forwardRef<HTMLDivElement, Omit<LayoutComponentProps, 'type
   (props, ref) => <LayoutComponent ref={ref} type="footer" {...props} />
 );
 
+function BaseFooter() {
+  return (
+    <Footer>
+      <p className='w-full text-center text-sm text-foreground/40'>
+          &copy; Krzysztof Stefański - 2024 - All rights reserved
+      </p>
+    </Footer>
+  );
+}
+
 Body.displayName = 'Body';
 Header.displayName = 'Header';
 Footer.displayName = 'Footer';
+BaseFooter.displayName = 'Footer';
 
 Layout.Header = Header
 Layout.Body = Body
 Layout.Footer = Footer
+Layout.BaseFooter = BaseFooter;
 
 export { Layout }
 

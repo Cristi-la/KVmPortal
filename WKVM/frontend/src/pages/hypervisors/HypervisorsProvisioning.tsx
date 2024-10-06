@@ -2,13 +2,11 @@ import { Layout } from 'layouts/Layout'
 import { DataTable } from 'components/tables/data-table'
 import { ApiService } from '@/api/services.gen';
 import { useMemo } from "react";
-import hypervisorColumns from 'pages/hypervisors/columns';
 import AuthContext from 'context/AuthContext';
 import { useContext } from 'react';
 import {
     Breadcrumb,
     BreadcrumbItem,
-    BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
@@ -23,7 +21,7 @@ export default function HypervisorsList() {
     console.log(user.profiles[0].name)
 
     return (
-        <Layout>
+        <Layout fixed>
             <Layout.Header sticky>
                 <Breadcrumb>
                     <BreadcrumbList>
@@ -47,13 +45,10 @@ export default function HypervisorsList() {
                 
             </Layout.Header>
 
-            <Layout.Body className='h-full bg-scondary dark:bg-secondary/20'>
+            <Layout.Body>
                 
             </Layout.Body>
 
-            <Layout.Footer>
-                
-            </Layout.Footer>
         </Layout>
     );
 }

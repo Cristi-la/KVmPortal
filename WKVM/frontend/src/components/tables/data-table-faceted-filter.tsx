@@ -4,6 +4,7 @@ import { Table } from '@tanstack/react-table'
 
 import { cn } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { Tag } from 'components/Tag'
 import { Button } from '@/components/ui/button'
 import {
   Command,
@@ -22,7 +23,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import type { CancelablePromise } from '@/api/core/CancelablePromise';
 
-export interface DataTableFacetedFilterProps<TData, TValue> {
+export interface FacetedFilterProps<TData, TValue> {
   id?: string
   title: string
   table?: Table<TData>
@@ -36,7 +37,7 @@ export function DataTableFacetedFilter<TData, TValue>({
   title,
   intOptions,
   query,
-}: DataTableFacetedFilterProps<TData, TValue>) {
+}: FacetedFilterProps<TData, TValue>) {
   if (!table) return;
 
   const column = table.getAllColumns().find((column: { id: string, accessorKey?: string }) => column.id === id || column.accessorKey === id)
@@ -82,13 +83,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                   options
                     .filter((option) => selectedValues.has(option.id))
                     .map((option) => (
-                      <Badge
-                        variant='secondary'
-                        key={option.id}
-                        className='rounded-sm px-1 font-normal'
-                      >
-                        {option.name}
-                      </Badge>
+                      <Tag color={option.color} key={option.id}>{option.name}</Tag>
                     ))
                 )}
               </div>
@@ -129,16 +124,7 @@ export function DataTableFacetedFilter<TData, TValue>({
                     >
                       <CheckIcon className={cn('h-4 w-4')} />
                     </div>
-
-                      { (option.color) ? 
-                        (<Badge
-                          key={option.id}
-                          style={{ backgroundColor: option.color }}
-                          className="px-1 py-0.5 text-xs text-nowrap"
-                        >{option.name}</Badge>)
-                        : (<span>{option.name}</span>)
-                      }
-
+                    <Tag color={option.color} key={option.id}>{option.name}</Tag>
                   </CommandItem>
                 )
               })}

@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from apps.common.serializers import MessageSerializer
 from django.conf import settings
 from django.http import HttpRequest, JsonResponse, Http404
-
+from apps.kvm.models import Hypervisor
+from apps.kvm.tasks import collect_data
 
 class DebugView(TemplateView):
     template_name = "debug.html"
@@ -20,6 +21,9 @@ class DebugView(TemplateView):
         return super().dispatch(request, *args, **kwargs)
     
     def get(self, request, *args, **kwargs):
+        collect_data.delay(12)
+
+
         return super().get(request, *args, **kwargs)
     #     from apps.acc.models import Account
     #     acc = Account.objects.on_current().first()

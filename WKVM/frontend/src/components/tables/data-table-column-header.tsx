@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu'; // Adjust the import path
 import { Column, Row } from '@tanstack/react-table'; // Adjust the import path
 import { PlusCircledIcon, ArrowUpIcon, ArrowDownIcon, CaretSortIcon, MinusIcon, EyeNoneIcon, ZoomInIcon } from '@radix-ui/react-icons'; // Adjust the import path
-import { DebouncedInput } from 'components/customised/DebouncedInput'; // Adjust the import path
+import { DebouncedInput } from 'components/fields/DebouncedInput'; // Adjust the import path
 
 import { Badge } from '@/components/ui/badge'
 
