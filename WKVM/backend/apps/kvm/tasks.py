@@ -45,24 +45,36 @@ def ping_host(self, host: str):
 def collect_data(
     self: BaseStep,
     hypervisor_id: int,
-    skip: bool = True
 ):
     def collect():
         data = ""
-        with open('P:\\WKVM\\backend\\capabilities.xml', 'r') as f:
+        with open('P:\\WKVM\\backend\\domains.xml', 'r') as f:
             data = f.read()
 
-        return XMLData.XMLType.CAPABILITIES, data
+        return XMLData.XMLType.DOMAIN, data
     
-    tasks = [
-        collect
-    ]
 
-    obj = Hypervisor.objects.get(id=hypervisor_id)
-    proc = Processor(tasks)
-    buffer, _ = self.run_process(proc, skip)
-    out = obj.proccess_bulk_xml(buffer)
+    obj: Hypervisor = Hypervisor.objects.get(id=hypervisor_id)
+    data = [collect()]
+    obj.save_bulk_xml(data)
 
-    return out
+    vm = obj.vms.get(id=2)
+    vm.parse_xmls(data)
+    vm.save()
 
+    # # Rmove this code after development
+    # obj.parse_xmls(data) 
+    # obj.save()
 
+    # obj.
+    
+    # tasks = [
+        
+    # ]
+
+    
+    # proc = Processor(tasks)
+    # buffer, _ = self.run_process(proc)
+    
+
+    return None

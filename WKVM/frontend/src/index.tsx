@@ -1,24 +1,22 @@
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter as Router, RouterProvider } from 'react-router-dom';
-import { ThemeProvider } from 'layouts/ThemeLayout'
-import { Toaster } from '@/components/ui/toaster'
-import  { AuthProvider } from 'context/AuthContext';
-import App from "App";
+import React from 'react';
+import { BrowserRouter, RouterProvider } from 'react-router-dom';
+import App from './App';
 
+import { Toaster } from '@/components/ui/toaster'
 import 'styles/globals.css';
 import 'utils/interceptors'
 
+import  { AuthProvider } from 'context/AuthContext';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-    // <React.StrictMode>
-        <Router>
+    <React.StrictMode>
+        <BrowserRouter>
             <AuthProvider>
-                <ThemeProvider>
-                    <App />
-                    <Toaster />
-                </ThemeProvider>
+                <App />
             </AuthProvider>
-        </Router>
-    // </React.StrictMode>
+            <Toaster />
+        </BrowserRouter>
+    </React.StrictMode>
 );
   

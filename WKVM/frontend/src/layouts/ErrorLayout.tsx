@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/button'
-import PageTitle from 'components/PageTitle';
+import PageTitle from 'utils/page-title';
 
 interface ErrorLayoutProps {
   code: number;

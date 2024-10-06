@@ -19,7 +19,7 @@ export default  function Home() {
   const { user } = useContext(AuthContext)!;
 
   return (
-    <Layout>
+    <Layout fixed>
       <Layout.Header sticky>
         <Breadcrumb>
           <BreadcrumbList>
@@ -39,7 +39,7 @@ export default  function Home() {
 
       </Layout.Header>
 
-      <Layout.Body className=''>
+      <Layout.Body>
           {/* <span>{user.username}</span> */}
 
           <Button
@@ -92,10 +92,6 @@ export default  function Home() {
 
           
       </Layout.Body>
-
-      <Layout.Footer>
-          <span>footer</span>
-      </Layout.Footer>
     </Layout>
   );
 }

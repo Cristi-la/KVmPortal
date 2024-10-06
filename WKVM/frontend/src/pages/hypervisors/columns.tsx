@@ -1,15 +1,14 @@
-import { ColumnDef, RowData, Row} from "@tanstack/react-table";
+import type { ColumnDef, RowData, Row} from "@tanstack/react-table";
 import { Hypervisor } from "@/api/types.gen";
 import { ColumnHeader } from 'components/tables/data-table-column-header';
 import { ColumnCellTags } from 'components/tables/data-table-column-cell';
 import { Checkbox } from "@/components/ui/checkbox"
-import { Button } from "@/components/ui/button"
 import { Link } from 'react-router-dom';
 import {
   ChevronDownIcon,
   ChevronRightIcon
 } from '@radix-ui/react-icons'
-import type { DataTableFacetedFilterProps } from '/components/tables/data-table-faceted-filter';
+import type { FacetedFilterProps } from '/components/tables/data-table-faceted-filter';
 import { ApiService } from "@/api/services.gen";
 import type { VMAbstract } from "@/api/types.gen";
 import {
@@ -29,7 +28,7 @@ declare module '@tanstack/react-table' {
   }
 }
 
-export const faceFilers: Array<DataTableFacetedFilterProps<any, any>> = [
+export const faceFilers: Array<FacetedFilterProps<any, any>> = [
   {
     id: 'tags',
     title: 'Tags',

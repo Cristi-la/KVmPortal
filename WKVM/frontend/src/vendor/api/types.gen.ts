@@ -10,14 +10,14 @@ export type Hypervisor = {
     readonly id: number;
     readonly tags: Array<TagAbstract>;
     readonly vms: Array<VMAbstract>;
+    readonly xmls: Array<XmlAbstract>;
     readonly created: string;
     readonly updated: string;
     description?: string | null;
     hostname: string;
     mgt_ip: string;
     instance?: number;
-    auth?: number;
-    xmls?: Array<(number)>;
+    auth?: number | null;
 };
 
 export type HypervisorAbstract = {
@@ -37,13 +37,6 @@ export type PaginatedHypervisorList = {
     results: Array<Hypervisor>;
 };
 
-export type PaginatedTagList = {
-    count: number;
-    next?: string | null;
-    previous?: string | null;
-    results: Array<Tag>;
-};
-
 export type PaginatedVMList = {
     count: number;
     next?: string | null;
@@ -55,6 +48,18 @@ export type SiteTokenObtainPair = {
     username: string;
     password: string;
 };
+
+/**
+ * * `running` - Running
+ * * `idle` - Idle
+ * * `paused` - Paused
+ * * `in shutdown` - In Shutdown
+ * * `shut off` - Shut Off
+ * * `crashed` - Crashed
+ * * `pm suspended` - PM Suspended
+ * * `no info` - No Info
+ */
+export type StateEnum = 'running' | 'idle' | 'paused' | 'in shutdown' | 'shut off' | 'crashed' | 'pm suspended' | 'no info';
 
 /**
  * A ModelSerializer that takes additional arguments for
@@ -100,6 +105,7 @@ export type VM = {
     name: string;
     vcpu?: number | null;
     memory?: number | null;
+    state?: StateEnum;
     instance?: number;
     xmls?: Array<(number)>;
 };
@@ -109,7 +115,31 @@ export type VMAbstract = {
     name: string;
     vcpu?: number | null;
     memory?: number | null;
+    state?: StateEnum;
+    readonly created: string;
+    readonly updated: string;
 };
+
+export type XMLData = {
+    xml_type?: XmlTypeEnum;
+    /**
+     * SHA-256 hash of the XML data. Leave blank to auto-calculate.
+     */
+    xml_hash?: string | null;
+    raw_xml: string;
+};
+
+export type XmlAbstract = {
+    readonly id: number;
+    xml_type?: XmlTypeEnum;
+};
+
+/**
+ * * `Capabilities` - Domain capabilities
+ * * `SMBIOS` - System Management BIOS (SMBIOS)
+ * * `Other` - Other XML data
+ */
+export type XmlTypeEnum = 'Capabilities' | 'SMBIOS' | 'Other';
 
 export type ApiHypervisorListData = {
     /**
@@ -158,42 +188,22 @@ export type ApiHypervisorRetrieveData = {
 
 export type ApiHypervisorRetrieveResponse = Hypervisor;
 
-export type ApiStatusRestCheckRetrieveResponse = Message;
-
-export type ApiTagListData = {
+export type ApiHypervisorXmlRetrieveData = {
     /**
-     * Format of the exported data (csv, excel, json)
+     * A unique integer value identifying this hypervisor.
      */
-    _export?: 'csv' | 'excel' | 'json';
-    color?: string;
-    created?: string;
-    description?: string;
+    id: number;
     /**
-     * Comma-separated list of fields to include in the output
+     * Type of the XML data
      */
-    fields?: string;
-    instance?: number;
-    name?: string;
-    /**
-     * Which field to use when ordering the results.
-     */
-    ordering?: string;
-    /**
-     * A page number within the paginated result set.
-     */
-    page?: number;
-    /**
-     * Number of results to return per page.
-     */
-    pageSize?: number;
-    /**
-     * A search term.
-     */
-    search?: string;
-    updated?: string;
+    xmlType: string;
 };
 
-export type ApiTagListResponse = PaginatedTagList;
+export type ApiHypervisorXmlRetrieveResponse = XMLData;
+
+export type ApiStatusRestCheckRetrieveResponse = Message;
+
+export type ApiTagListResponse = Array<Tag>;
 
 export type ApiTagRetrieveData = {
     /**
@@ -247,6 +257,7 @@ export type ApiVmListData = {
      * A search term.
      */
     search?: string;
+    state?: string;
     tags?: Array<(number)>;
     updated?: string;
     vcpu?: number;
@@ -263,6 +274,19 @@ export type ApiVmRetrieveData = {
 };
 
 export type ApiVmRetrieveResponse = VM;
+
+export type ApiVmXmlRetrieveData = {
+    /**
+     * A unique integer value identifying this vm.
+     */
+    id: number;
+    /**
+     * Type of the XML data
+     */
+    xmlType: string;
+};
+
+export type ApiVmXmlRetrieveResponse = XMLData;
 
 export type $OpenApiTs = {
     '/api/hypervisor/': {
@@ -281,6 +305,14 @@ export type $OpenApiTs = {
             };
         };
     };
+    '/api/hypervisor/{id}/xml/': {
+        get: {
+            req: ApiHypervisorXmlRetrieveData;
+            res: {
+                200: XMLData;
+            };
+        };
+    };
     '/api/status/rest-check/': {
         get: {
             res: {
@@ -290,9 +322,8 @@ export type $OpenApiTs = {
     };
     '/api/tag/': {
         get: {
-            req: ApiTagListData;
             res: {
-                200: PaginatedTagList;
+                200: Array<Tag>;
             };
         };
     };
@@ -333,6 +364,14 @@ export type $OpenApiTs = {
             req: ApiVmRetrieveData;
             res: {
                 200: VM;
+            };
+        };
+    };
+    '/api/vm/{id}/xml/': {
+        get: {
+            req: ApiVmXmlRetrieveData;
+            res: {
+                200: XMLData;
             };
         };
     };

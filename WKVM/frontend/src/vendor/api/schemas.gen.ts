@@ -25,6 +25,13 @@ values with complex, nested serializations`,
             },
             readOnly: true
         },
+        xmls: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/XmlAbstract'
+            },
+            readOnly: true
+        },
         created: {
             type: 'string',
             format: 'date-time',
@@ -50,16 +57,11 @@ values with complex, nested serializations`,
             type: 'integer'
         },
         auth: {
-            type: 'integer'
-        },
-        xmls: {
-            type: 'array',
-            items: {
-                type: 'integer'
-            }
+            type: 'integer',
+            nullable: true
         }
     },
-    required: ['created', 'hostname', 'id', 'mgt_ip', 'tags', 'updated', 'vms']
+    required: ['created', 'hostname', 'id', 'mgt_ip', 'tags', 'updated', 'vms', 'xmls']
 } as const;
 
 export const $HypervisorAbstract = {
@@ -119,35 +121,6 @@ export const $PaginatedHypervisorList = {
     }
 } as const;
 
-export const $PaginatedTagList = {
-    type: 'object',
-    required: ['count', 'results'],
-    properties: {
-        count: {
-            type: 'integer',
-            example: 123
-        },
-        next: {
-            type: 'string',
-            nullable: true,
-            format: 'uri',
-            example: 'http://api.example.org/accounts/?page=4'
-        },
-        previous: {
-            type: 'string',
-            nullable: true,
-            format: 'uri',
-            example: 'http://api.example.org/accounts/?page=2'
-        },
-        results: {
-            type: 'array',
-            items: {
-                '$ref': '#/components/schemas/Tag'
-            }
-        }
-    }
-} as const;
-
 export const $PaginatedVMList = {
     type: 'object',
     required: ['count', 'results'],
@@ -190,6 +163,19 @@ export const $SiteTokenObtainPair = {
         }
     },
     required: ['password', 'username']
+} as const;
+
+export const $StateEnum = {
+    enum: ['running', 'idle', 'paused', 'in shutdown', 'shut off', 'crashed', 'pm suspended', 'no info'],
+    type: 'string',
+    description: `* \`running\` - Running
+* \`idle\` - Idle
+* \`paused\` - Paused
+* \`in shutdown\` - In Shutdown
+* \`shut off\` - Shut Off
+* \`crashed\` - Crashed
+* \`pm suspended\` - PM Suspended
+* \`no info\` - No Info`
 } as const;
 
 export const $Tag = {
@@ -327,6 +313,9 @@ values with complex, nested serializations`,
             format: 'int64',
             nullable: true
         },
+        state: {
+            '$ref': '#/components/schemas/StateEnum'
+        },
         instance: {
             type: 'integer'
         },
@@ -364,7 +353,61 @@ export const $VMAbstract = {
             minimum: 0,
             format: 'int64',
             nullable: true
+        },
+        state: {
+            '$ref': '#/components/schemas/StateEnum'
+        },
+        created: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
+        },
+        updated: {
+            type: 'string',
+            format: 'date-time',
+            readOnly: true
         }
     },
-    required: ['id', 'name']
+    required: ['created', 'id', 'name', 'updated']
+} as const;
+
+export const $XMLData = {
+    type: 'object',
+    properties: {
+        xml_type: {
+            '$ref': '#/components/schemas/XmlTypeEnum'
+        },
+        xml_hash: {
+            type: 'string',
+            nullable: true,
+            description: 'SHA-256 hash of the XML data. Leave blank to auto-calculate.',
+            maxLength: 256
+        },
+        raw_xml: {
+            type: 'string'
+        }
+    },
+    required: ['raw_xml']
+} as const;
+
+export const $XmlAbstract = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            readOnly: true
+        },
+        xml_type: {
+            '$ref': '#/components/schemas/XmlTypeEnum'
+        }
+    },
+    required: ['id']
+} as const;
+
+export const $XmlTypeEnum = {
+    enum: ['Capabilities', 'SMBIOS', 'Other'],
+    type: 'string',
+    description: `* \`Capabilities\` - Domain capabilities
+* \`SMBIOS\` - System Management BIOS (SMBIOS)
+* \`Other\` - Other XML data`
 } as const;

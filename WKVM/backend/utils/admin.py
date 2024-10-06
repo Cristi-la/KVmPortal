@@ -1,13 +1,76 @@
+from collections.abc import Sequence
 from django.contrib import admin
+from django.http import HttpRequest
+from django.urls import reverse
+from django.utils.html import format_html
 
 class BaseTimeAdmin(admin.ModelAdmin):
-    __fields__ = ('created', 'updated')
+    __readonly_fields__ = ('created', 'updated')
+    __fields__ = __readonly_fields__
 
     def __init__(self, *args, **kwargs):
-        self.list_display = self.list_display + BaseTimeAdmin.__fields__
-        self.readonly_fields = self.readonly_fields + self.__fields__
+        self.list_display += BaseTimeAdmin.__fields__
+        self.readonly_fields += self.__readonly_fields__
         super().__init__(*args, **kwargs)
 
-class BaseInfoAdmin(BaseTimeAdmin):
-    __fields__ = ('created', 'updated', 'description')
+    def get_list_display(self, request: HttpRequest) -> Sequence[str]:
+        list_display = super().get_list_display(request)
+        if 'instance' in [f.name for f in self.model._meta.fields]:
+            list_display += ('instance',)
 
+        return list_display
+
+    def get_search_fields(self, request):
+        search_fields = super().get_search_fields(request)
+        if 'instance' in [f.name for f in self.model._meta.fields]:
+            search_fields += ('instance__name',)
+
+        return search_fields
+
+    def get_list_filter(self, request):
+        list_filter = super().get_list_filter(request)
+        if 'instance' in [f.name for f in self.model._meta.fields]:
+            list_filter += ('instance',)
+
+        return list_filter
+
+class BaseInfoAdmin(BaseTimeAdmin):
+    __readonly_fields__ = ('created', 'updated')
+    __fields__ = (*__readonly_fields__, 'description')
+
+
+class BaseTabularInline(admin.TabularInline):
+    extra = 0
+    can_delete = False
+    __readonly_fields__ = ('pk', '_name',)
+    __fields__ = __readonly_fields__
+
+    def __init__(self, *args, **kwargs):
+        if self.fields:
+            self.fields = self.__fields__ + self.fields
+        else:
+            self.fields = self.__fields__
+
+        if self.readonly_fields:
+            self.readonly_fields = self.__readonly_fields__ + self.readonly_fields
+        else:
+            self.readonly_fields = self.__readonly_fields__
+
+        super().__init__(*args, **kwargs)
+
+    def has_add_permission(self, request, obj=None):
+        return False
+    
+    def create_link(self, pk, text, model):
+        if not pk:
+            return "N/A"
+        
+        app_label = model._meta.app_label
+        model_name = model._meta.model_name
+        
+        url = reverse(f'admin:{app_label}_{model_name}_change', args=[pk])
+        return format_html('<a href="{}">{}</a>', url, text)
+
+    def _name(self, obj):
+        return self.create_link(obj.pk, str(obj), obj.__class__)
+        

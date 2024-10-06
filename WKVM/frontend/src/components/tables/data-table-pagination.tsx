@@ -16,19 +16,23 @@ import {
 } from '@/components/ui/select'
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>
+  table: Table<TData>,
+  paggination?: boolean,
+  selection?: boolean,
 }
 
 export function DataTablePagination<TData>({
   table,
+  paggination = true,
+  selection = true,
 }: DataTablePaginationProps<TData>) {
   return (
     <div className='flex items-center justify-between overflow-auto px-2'>
-      <div className='hidden flex-1 text-sm text-muted-foreground sm:block'>
+      { (selection) && (<div className='hidden flex-1 text-sm text-muted-foreground sm:block'>
         {table.getFilteredSelectedRowModel().rows.length} of{' '}
         {table.getFilteredRowModel().rows.length} row(s) selected.
-      </div>
-      <div className='flex items-center sm:space-x-6 lg:space-x-8'>
+      </div>)}
+      { paggination && (<div className='flex items-center sm:space-x-6 lg:space-x-8'>
         <div className='flex items-center space-x-2'>
           <p className='hidden text-sm font-medium sm:block'>Rows per page</p>
           <Select
@@ -91,7 +95,7 @@ export function DataTablePagination<TData>({
             <DoubleArrowRightIcon className='h-4 w-4' />
           </Button>
         </div>
-      </div>
+      </div>) }
     </div>
   )
 }
