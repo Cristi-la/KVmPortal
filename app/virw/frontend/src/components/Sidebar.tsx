@@ -67,7 +67,11 @@ export default function Sidebar({
             <div
               className={`flex flex-col justify-end truncate ${isCollapsed ? 'invisible w-0' : 'visible w-auto'}`}
             >
+<<<<<<< HEAD:app/virw/frontend/src/components/Sidebar.tsx
               <span className='font-bold text-xl text-foreground/70'>VIRW</span>
+=======
+              <span className='font-medium text-primary'>Web KVM</span>
+>>>>>>> 5547abb4a7464bf1c092df7da4bda8dcd98808dc:WKVM/frontend/src/components/Sidebar.tsx
               <span className='text-xs'>Version 1.0.0</span>
             </div>
           </div>

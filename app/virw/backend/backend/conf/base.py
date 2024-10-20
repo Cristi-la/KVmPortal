@@ -207,6 +207,31 @@ TEMPLATES = [
 ]
 # ----------------------------
 
+<<<<<<< HEAD:app/virw/backend/backend/conf/base.py
+=======
+
+ASGI_APPLICATION = 'backend.asgi.application'
+# LOCAL
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+# PRODUCTION
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres', 
+#         'USER': 'postgres',
+#         'PASSWORD': 'asdf',
+#         'HOST': '127.0.0.1', 
+#         'PORT': '5432',
+#     }
+# }
+
+
+>>>>>>> 5547abb4a7464bf1c092df7da4bda8dcd98808dc:WKVM/backend/backend/settings.py
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -227,6 +252,7 @@ TIME_ZONE = 'Europe/Warsaw'
 USE_I18N = True
 USE_TZ = True
 
+<<<<<<< HEAD:app/virw/backend/backend/conf/base.py
 # --------------------------------------
 # Files handlers settings
 # --------------------------------------    
@@ -247,6 +273,15 @@ STORAGES = {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
     },
 }
+=======
+STATIC_URL = 'static/'
+MEDIA_URL = 'media/'
+MEDIA_ROOT = 'media/'
+
+STATICFILES_DIRS = [
+    BASE_DIR / "../frontend/static"
+]
+>>>>>>> 5547abb4a7464bf1c092df7da4bda8dcd98808dc:WKVM/backend/backend/settings.py
 
 # --------------------------------------
 # Databases settings

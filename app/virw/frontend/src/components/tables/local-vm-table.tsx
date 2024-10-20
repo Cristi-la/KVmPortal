@@ -11,7 +11,11 @@ import {
 import { Link } from "react-router-dom"
 import type { VMAbstract } from "@/api/types.gen"
 import { cn } from "@/lib/utils"
+<<<<<<< HEAD:app/virw/frontend/src/components/tables/local-vm-table.tsx
 import { formatDate as fd, formatState as fs } from 'utils/parse';
+=======
+import { formatDate as fd, formatState as fs } from 'utils/data';
+>>>>>>> 5547abb4a7464bf1c092df7da4bda8dcd98808dc:WKVM/frontend/src/components/tables/local-vm-table.tsx
 import { LocalDataTable } from "components/tables/data-table-local"
 import type { ColumnDef } from "@tanstack/react-table";
 

@@ -1,7 +1,11 @@
 import { Moon, Sun } from "lucide-react"
  
 import { Button } from "@/components/ui/button"
+<<<<<<< HEAD:app/virw/frontend/src/vendor/components/ui/mode-toggle.tsx
 import {useTheme} from "layouts/wrapers/ThemeWrapper"
+=======
+import {useTheme} from "layouts/ThemeWrapper"
+>>>>>>> 5547abb4a7464bf1c092df7da4bda8dcd98808dc:WKVM/frontend/src/vendor/components/ui/mode-toggle.tsx
 import {
   DropdownMenu,
   DropdownMenuContent,
