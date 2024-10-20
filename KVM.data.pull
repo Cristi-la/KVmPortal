@@ -1,4 +1,0 @@
-cat /etc/os-release
-uname
-ipmitool
-

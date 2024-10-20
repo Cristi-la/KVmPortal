@@ -1,0 +1,16 @@
+FROM node:20.16.0
+
+WORKDIR /app/
+
+RUN apt-get update && apt-get install -y netcat-openbsd
+
+COPY ./entrypoint_frontend.sh /
+RUN sed -i 's/\r$//g' /entrypoint_frontend.sh
+RUN chmod +x /entrypoint_frontend.sh
+
+RUN mkdir ./virw
+COPY ./virw/frontend ./virw/
+WORKDIR /app/virw/frontend/
+
+ENTRYPOINT ["bash", "/entrypoint_frontend.sh"]
+

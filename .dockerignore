@@ -1,0 +1,25 @@
+# Ignore node_modules
+node_modules
+
+# Ignore build and log files
+build
+dist
+*.log
+
+# Ignore local environment and config files
+.env
+.DS_Store
+
+# Ignore temporary files
+*.tmp
+*.swp
+*.swo
+
+# Ignore coverage reports
+coverage
+
+# Ignore Docker files (if they're already inside your project directory)
+docker-compose.yml
+Doc.web.backend
+Doc.web.frontend
+.dockerignore

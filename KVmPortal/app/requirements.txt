@@ -1,9 +1,0 @@
-Django==5.0.7
-psycopg2-binary==2.9.9
-gunicorn==21.2.0
-uvicorn==0.29.0
-daphne==4.1.0
-channels==4.0.0
-channels_redis==4.1.0
-django-debug-toolbar==4.4.3
-paramiko==3.4.0

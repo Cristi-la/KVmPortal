@@ -1,0 +1,66 @@
+# pull official base image
+FROM python:3.11.4-slim-buster
+
+# set work directory
+WORKDIR /app/
+
+# set environment variables
+# Prevents Python from writing pyc files to disc
+ENV PYTHONDONTWRITEBYTECODE 1
+# Prevents Python from buffering stdout and stder
+ENV PYTHONUNBUFFERED 1
+
+
+# install system dependencies
+RUN apt-get update
+RUN apt-get install -y libvirt-dev
+RUN apt-get install -y python3-dev
+RUN apt-get install -y libxml2-dev
+RUN apt-get install -y qemu-kvm
+RUN apt-get install -y virtinst
+RUN apt-get install -y virt-manager
+RUN apt-get install -y libvirt-daemon-system 
+RUN apt-get install -y build-essential
+RUN apt-get install -y pkg-config
+RUN apt-get install -y libpq-dev
+RUN apt-get clean
+RUN rm -rf /var/lib/apt/lists/*
+
+RUN usermod -aG libvirt $(whoami)
+
+# RUN pip install --upgrade pip --proxy "https://87.254.212.120:8080/"
+# COPY ./requirements.txt /requirements.txt
+# RUN pip install -r /requirements.txt --proxy "http://87.254.212.120:8080/"
+
+RUN pip3 install --upgrade pip
+RUN pip3 install --upgrade setuptools
+COPY ./requirements.txt /requirements.txt
+RUN pip3 install -r /requirements.txt
+
+# # Start scripts
+COPY ./entrypoint_backend.sh /
+RUN sed -i 's/\r$//g' /entrypoint_backend.sh
+RUN chmod +x /entrypoint_backend.sh
+
+COPY ./celery_beat.sh /
+RUN sed -i 's/\r$//g' /celery_beat.sh
+RUN chmod +x /celery_beat.sh
+
+
+COPY ./celery_worker.sh /
+RUN sed -i 's/\r$//g' /celery_worker.sh
+RUN chmod +x /celery_worker.sh
+
+
+COPY ./django.sh /
+RUN sed -i 's/\r$//g' /django.sh
+RUN chmod +x /django.sh
+
+
+# copy project
+RUN mkdir ./virw
+COPY ./virw/backend ./virw/
+WORKDIR /app/virw/backend/
+
+
+ENTRYPOINT ["bash", "/entrypoint_backend.sh"]
